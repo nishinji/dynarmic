@@ -1,6 +1,6 @@
 /*
 	a sample to use MmapAllocator with an user-defined name
-	cat /proc/`psidof ./memfd`/maps
+	cat /proc/`pidof ./memfd`/maps
 
 7fca70b44000-7fca70b4a000 rw-p 00000000 00:00 0
 7fca70b67000-7fca70b68000 rwxs 00000000 00:05 19960170                   /memfd:xyz (deleted)
@@ -25,6 +25,7 @@ public:
 
 int main()
 {
+	printf("pid=%d\n", getpid());
     Code c1("Xbyak::abc", 123);
     Code c2("Xbyak::xyz", 456);
     printf("c1 %d\n", c1.getCode<int (*)()>()());
@@ -36,4 +37,5 @@ int main()
 			printf("%s\n", line.c_str());
 		}
 	}
+	getchar();
 }
