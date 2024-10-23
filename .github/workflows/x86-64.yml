@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-24.04, macos-13 ]
+        os: [ windows-latest, ubuntu-24.04 ]
         cpu_detection: [ 0, 1 ]
       fail-fast: false
 
@@ -21,12 +21,6 @@ jobs:
         if: ${{matrix.os == 'ubuntu-24.04'}}
         run: sudo apt-get install llvm ninja-build gcc-11 g++-11
 
-      - name: Install build dependencies
-        if: ${{matrix.os == 'macos-13'}}
-        run: |
-          brew install llvm ninja
-          echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
-
       - name: Checkout dynarmic repo
         uses: actions/checkout@v4
 
@@ -37,14 +31,14 @@ jobs:
           path: externals/ext-boost
 
       - name: Checkout unicorn repo
-        if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
+        if: ${{matrix.os == 'ubuntu-24.04'}}
         uses: actions/checkout@v4
         with:
           repository: yuzu-mirror/unicorn
           path: externals/unicorn
 
       - name: Build unicorn
-        if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
+        if: ${{matrix.os == 'ubuntu-24.04'}}
         working-directory: externals/unicorn
         run: UNICORN_ARCHS=aarch64,arm ./make.sh
 
@@ -54,20 +48,6 @@ jobs:
           CC: gcc-11
           CXX: g++-11
           CXXFLAGS: -Wp,-D_GLIBCXX_ASSERTIONS
-        run: >
-          cmake
-          -B ${{github.workspace}}/build
-          -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
-          -DDYNARMIC_TESTS_USE_UNICORN=1
-          -DDYNARMIC_USE_LLVM=1
-          -DLIBUNICORN_INCLUDE_DIR=${{github.workspace}}/externals/unicorn/include
-          -DLIBUNICORN_LIBRARY=${{github.workspace}}/externals/unicorn/libunicorn.a
-          -G Ninja
-
-      - name: Configure CMake
-        if: ${{matrix.os == 'macos-13'}}
         run: >
           cmake
           -B ${{github.workspace}}/build
