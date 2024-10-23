@@ -1,4 +1,4 @@
-TARGET = make_nm normalize_prefix bad_address misc cvt_test cvt_test32 noexception misc32 detect_x32
+TARGET = make_nm normalize_prefix bad_address misc cvt_test cvt_test32 noexception misc32 detect_x32 avx10_test
 XBYAK_INC=../xbyak/xbyak.h ../xbyak/xbyak_mnemonic.h
 UNAME_S=$(shell uname -s)
 ifeq ($(shell ./detect_x32),x32)
@@ -57,6 +57,15 @@ noexception: noexception.cpp $(XBYAK_INC)
 	$(CXX) $(CFLAGS) $< -o $@ -fno-exceptions
 apx: apx.cpp $(XBYAK_INC)
 	$(CXX) $(CFLAGS) apx.cpp -o $@
+avx10_test: avx10_test.cpp $(XBYAK_INC)
+	$(CXX) $(CFLAGS) avx10_test.cpp -o $@ -DXBYAK64
+
+TEST_FILES=old.txt new-ymm.txt bf16.txt comp.txt misc.txt convert.txt minmax.txt saturation.txt
+xed_test:
+	@set -e; \
+	for target in $(addprefix avx10/, $(TEST_FILES)); do \
+		./test_by_xed.sh $$target || exit 1; \
+	done
 
 test_nm: normalize_prefix $(TARGET)
 	$(MAKE) -C ../gen
@@ -81,6 +90,7 @@ ifneq ($(X32),1)
 endif
 	./jmp64
 	./apx
+	./avx10_test
 endif
 
 test_avx: normalize_prefix
@@ -103,6 +113,9 @@ ifeq ($(BIT),64)
 	CXX=$(CXX) ./test_avx512.sh 64
 endif
 
+test_avx10: avx10_test
+	./avx10_test
+
 detect_x32: detect_x32.c
 	$(CC) $< -o $@
 
@@ -112,7 +125,7 @@ test: detect_x32
 	$(MAKE) test_avx512
 
 clean:
-	$(RM) a.asm *.lst *.obj *.o $(TARGET) lib_run nm.cpp nm_frame make_512
+	$(RM) a.asm *.lst *.obj *.o $(TARGET) lib_run nm.cpp nm_frame make_512 avx10_test detect_x32
 
 lib_run: lib_test.cpp lib_run.cpp lib.h
 	$(CXX) $(CFLAGS) lib_run.cpp lib_test.cpp -o lib_run
