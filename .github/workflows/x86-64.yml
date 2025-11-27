@@ -23,35 +23,38 @@ jobs:
          sudo apt-get install llvm ninja-build
          sudo apt update
          sudo apt install -y gcc-12 g++-12
+         pip3 install meson
 
       - name: Install build dependencies
         if: ${{matrix.os == 'macos-latest'}}
         run: |
-          brew install llvm
+          brew install llvm meson
           echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
 
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
       - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Vita3K/ext-boost
           path: externals/ext-boost
 
       - name: Checkout unicorn repo
         if: ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          repository: yuzu-emu-mirror/unicorn
+          repository: unicorn-engine/unicorn
           path: externals/unicorn
 
-      - name: Build unicorn
-        if: ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
+      - name: Build Unicorn
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         working-directory: externals/unicorn
-        run: UNICORN_ARCHS=aarch64,arm ./make.sh
+        run: |
+          meson setup build -Darm=true -Daarch64=true
+          meson compile -C build
 
       - name: Configure CMake
         if: ${{matrix.os == 'ubuntu-latest'}}

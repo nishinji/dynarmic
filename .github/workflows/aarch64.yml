@@ -33,7 +33,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
 
       - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Vita3K/ext-boost
           path: externals/ext-boost
@@ -129,10 +129,10 @@ jobs:
     steps:
 
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Vita3K/ext-boost
           path: externals/ext-boost
