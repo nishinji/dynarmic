@@ -16,52 +16,50 @@ jobs:
 
     steps:
 
-      - name: Install build dependencies
-        run: >
-          sudo apt-get update &&
-          sudo apt-get install
-          gcc-10-aarch64-linux-gnu
-          g++-10-aarch64-linux-gnu
-          ninja-build
-          qemu-user
-
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14-aarch64-linux-gnu g++-14-aarch64-linux-gnu ninja-build qemu-user
+
+      - name: Download Boost headers
+        run: |
+          curl -L -o boost.tar.bz2 https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.bz2
+          tar xf boost.tar.bz2 -C ${{github.workspace}}
 
       - name: Ccache
         if: matrix.platform == 'linux'
-        uses: hendrikmuhs/ccache-action@v1.2
-
-      - name: Checkout ext-boost repo
-        uses: actions/checkout@v2
-        with:
-          repository: MerryMage/ext-boost
-          path: externals/ext-boost
+        uses: hendrikmuhs/ccache-action@v1.2.23
 
       - name: Configure CMake for AArch64 (Linux)
         if: matrix.platform == 'linux'
         env:
-          CC: aarch64-linux-gnu-gcc-10
-          CXX: aarch64-linux-gnu-g++-10
+          CC: aarch64-linux-gnu-gcc-14
+          CXX: aarch64-linux-gnu-g++-14
         run: >
           cmake
           -B ${{github.workspace}}/build-arm64
-          -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
+          -DBoost_INCLUDE_DIR=${{github.workspace}}/boost_1_88_0
+          -DCMAKE_CXX_FLAGS="-isystem ${{github.workspace}}/boost_1_88_0"
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_TESTS_USE_UNICORN=0
           -DDYNARMIC_USE_LLVM=0
           -G Ninja
-          
+
       - name: Configure CMake for AArch64 (Android)
         if: matrix.platform == 'android'
         run: >
           cmake
           -B ${{github.workspace}}/build-arm64
+          -DBoost_INCLUDE_DIR=${{github.workspace}}/boost_1_88_0
           -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DANDROID_ABI=arm64-v8a
           -DANDROID_PLATFORM=29
-          -DBoost_INCLUDE_DIR=${{github.workspace}}/externals/ext-boost
+          -DBoost_INCLUDE_DIR=${{github.workspace}}/boost_1_88_0
+          -DCMAKE_CXX_FLAGS="-isystem ${{github.workspace}}/boost_1_88_0"
           -DDYNARMIC_TESTS_USE_UNICORN=0
           -DDYNARMIC_USE_LLVM=0
           -G Ninja
@@ -73,12 +71,12 @@ jobs:
       - name: Configure CMake for x86_64
         if: matrix.platform == 'linux'
         env:
-          CC: gcc-10
-          CXX: g++-10
+          CC: gcc-14
+          CXX: g++-14
         run: >
           cmake
           -B ${{github.workspace}}/build-x64
-          -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
+          -DBoost_INCLUDE_DIR=${{github.workspace}}/boost_1_88_0
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
@@ -89,7 +87,7 @@ jobs:
       - name: Build x86_64
         if: matrix.platform == 'linux'
         working-directory: ${{github.workspace}}/build-x64
-        run: cmake --build . --config Release
+        run: cmake --build .
 
       - name: Basic tests
         if: matrix.platform == 'linux'
@@ -129,13 +127,12 @@ jobs:
     steps:
 
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
-      - name: Checkout ext-boost repo
-        uses: actions/checkout@v2
-        with:
-          repository: MerryMage/ext-boost
-          path: externals/ext-boost
+      - name: Download Boost headers
+        run: |
+          curl -L -o boost.7z https://archives.boost.io/release/1.88.0/source/boost_1_88_0.7z
+          7z x boost.7z -oC:\boost > $null
 
       - name: Setup msvc-arm64 environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -146,7 +143,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build-arm64
-          -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
+          -DBoost_INCLUDE_DIR=C:/boost/boost_1_88_0
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_WARNINGS_AS_ERRORS=0
           -DDYNARMIC_TESTS_USE_UNICORN=0

@@ -111,6 +111,10 @@ else()
         # GCC knows that the variable is actually a Reg64.  isMEM() will never return true for a
         # Reg64, but GCC doesn't know that.
         list(APPEND DYNARMIC_CXX_FLAGS -Wno-array-bounds)
+
+        # GCC 12+ emits bogus -Wstringop-overread warnings from inlined std::vector
+        # operations (e.g. erase) at -O3 for code paths that are not actually reachable.
+        list(APPEND DYNARMIC_CXX_FLAGS -Wno-stringop-overread)
     endif()
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
