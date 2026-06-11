@@ -15,6 +15,7 @@
 #    endif
 #endif
 
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <memory>

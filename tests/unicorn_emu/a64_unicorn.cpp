@@ -169,8 +169,14 @@ void A64Unicorn::DumpMemoryInformation() {
 void A64Unicorn::InterruptHook(uc_engine* uc, u32 int_number, void* user_data) {
     auto* this_ = static_cast<A64Unicorn*>(user_data);
 
-    u32 esr;
-    CHECKED(uc_reg_read(uc, UC_ARM64_REG_ESR, &esr));
+    uc_arm64_cp_reg cp_reg{};
+    cp_reg.op0 = 3;  // ESR_EL1 = S3_0_C5_C2_0
+    cp_reg.op1 = 0;
+    cp_reg.crn = 5;
+    cp_reg.crm = 2;
+    cp_reg.op2 = 0;
+    CHECKED(uc_reg_read(uc, UC_ARM64_REG_CP_REG, &cp_reg));
+    const u32 esr = static_cast<u32>(cp_reg.val);
 
     auto ec = esr >> 26;
     auto iss = esr & 0xFFFFFF;

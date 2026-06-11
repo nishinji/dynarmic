@@ -52,8 +52,8 @@ void A32Unicorn<TestEnvironment>::Run() {
             return;
         }
         if (auto cerr_ = uc_emu_start(uc, pc, END_ADDRESS, 0, 1)) {
-            fmt::print("uc_emu_start failed @ {:08x} (code = {:08x}) with error {} ({})", pc, *testenv.MemoryReadCode(pc), static_cast<size_t>(cerr_), uc_strerror(cerr_));
-            throw "A32Unicorn::Run() failure";
+            testenv.interrupts.emplace_back(fmt::format("uc_emu_start failed @ {:08x} (code = {:08x}) with error {} ({})", pc, *testenv.MemoryReadCode(pc), static_cast<size_t>(cerr_), uc_strerror(cerr_)));
+            return;
         }
         testenv.ticks_left--;
         if (!testenv.interrupts.empty() || testenv.code_mem_modified_by_guest) {
@@ -259,21 +259,25 @@ void A32Unicorn<TestEnvironment>::DumpMemoryInformation() {
 }
 
 template<class TestEnvironment>
-void A32Unicorn<TestEnvironment>::InterruptHook(uc_engine* /*uc*/, u32 int_number, void* user_data) {
+void A32Unicorn<TestEnvironment>::InterruptHook(uc_engine* uc, u32 int_number, void* user_data) {
     auto* this_ = static_cast<A32Unicorn*>(user_data);
 
-    u32 esr = 0;
-    // CHECKED(uc_reg_read(uc, UC_ARM_REG_ESR, &esr));
-
-    auto ec = esr >> 26;
-    auto iss = esr & 0xFFFFFF;
-
-    switch (ec) {
-    case 0x15:  // SVC
-        this_->testenv.CallSVC(iss);
+    switch (int_number) {
+    case 2: {  // EXCP_SWI: SVC 命令。即値は命令エンコーディングから取得する
+        u32 pc = 0;
+        CHECKED(uc_reg_read(uc, UC_ARM_REG_PC, &pc));
+        const bool is_thumb = (this_->GetCpsr() & (1 << 5)) != 0;
+        u32 imm;
+        if (is_thumb) {
+            imm = *this_->testenv.MemoryReadCode(pc - 2) & 0xFF;
+        } else {
+            imm = *this_->testenv.MemoryReadCode(pc - 4) & 0xFFFFFF;
+        }
+        this_->testenv.CallSVC(imm);
         break;
+    }
     default:
-        this_->testenv.interrupts.emplace_back(fmt::format("Unhandled interrupt: int_number: {:#x}, esr: {:#x} (ec: {:#x}, iss: {:#x})", int_number, esr, ec, iss));
+        this_->testenv.interrupts.emplace_back(fmt::format("Unhandled interrupt: int_number: {:#x}", int_number));
         break;
     }
 }
