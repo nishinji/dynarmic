@@ -13,6 +13,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <mcl/bit/bit_count.hpp>
+#include <mcl/bit/bit_field.hpp>
 #include <mcl/bit/swap.hpp>
 #include <mcl/scope_exit.hpp>
 #include <mcl/stdint.hpp>
@@ -72,7 +73,28 @@ bool AnyLocationDescriptorForTerminalHas(IR::Terminal terminal, Fn fn) {
     });
 }
 
+// Vita3K: VZIP with d == m is UNPREDICTABLE, but we give it a defined result (see asimd_VZIP)
+// which differs from unicorn's.
+bool IsVZIPWithSameRegisters(u32 instruction, bool is_thumb) {
+    static const InstructionGenerator arm_vzip{"111100111D11zz10dddd00011QM0mmmm"};
+    static const InstructionGenerator thumb_vzip{"111111111D11zz10dddd00011QM0mmmm"};
+
+    if (is_thumb) {
+        instruction = mcl::bit::swap_halves_32(instruction);
+    }
+    if (!(is_thumb ? thumb_vzip : arm_vzip).Match(instruction)) {
+        return false;
+    }
+
+    return mcl::bit::get_bit<22>(instruction) == mcl::bit::get_bit<5>(instruction)
+        && mcl::bit::get_bits<12, 15>(instruction) == mcl::bit::get_bits<0, 3>(instruction);
+}
+
 bool ShouldTestInst(u32 instruction, u32 pc, bool is_thumb, bool is_last_inst, A32::ITState it_state = {}) {
+    if (IsVZIPWithSameRegisters(instruction, is_thumb)) {
+        return false;
+    }
+
     const A32::LocationDescriptor location = A32::LocationDescriptor{pc, {}, {}}.SetTFlag(is_thumb).SetIT(it_state);
     IR::Block block{location};
     const bool should_continue = A32::TranslateSingleInstruction(block, location, instruction);
