@@ -21,7 +21,7 @@
 namespace {
 
 // This class shows how to implement a simple generator for Catch tests
-class RandomIntGenerator : public Catch::Generators::IGenerator<int> {
+class RandomIntGenerator final : public Catch::Generators::IGenerator<int> {
     std::minstd_rand m_rand;
     std::uniform_int_distribution<> m_dist;
     int current_number;
@@ -38,6 +38,24 @@ public:
     bool next() override {
         current_number = m_dist(m_rand);
         return true;
+    }
+
+    bool isFinite() const override { return false; }
+
+    // Note: this improves the performance only a bit, but it is here
+    //       to show how you can override the skip functionality.
+    void skipToNthElementImpl( std::size_t n ) override {
+        auto current_index = currentElementIndex();
+        assert(current_index <= n);
+        // We cannot jump forward the underlying generator directly,
+        // because we do not know how many bits each distributed number
+        // would consume to be generated.
+        for (; current_index < n; ++current_index) {
+            (void)m_dist(m_rand);
+        }
+
+        // We do not have to touch the current element index; it is handled
+        // by the base class.
     }
 };
 

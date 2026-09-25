@@ -21,11 +21,10 @@ namespace Catch {
         : CumulativeReporterBase(CATCH_MOVE(config))
         , xml(m_stream) {
             m_preferences.shouldRedirectStdOut = true;
-            m_preferences.shouldReportAllAssertions = true;
+            m_preferences.shouldReportAllAssertions = false;
+            m_preferences.shouldReportAllAssertionStarts = false;
             m_shouldStoreSuccesfulAssertions = false;
         }
-
-        ~SonarQubeReporter() override = default;
 
         static std::string getDescription() {
             using namespace std::string_literals;
@@ -39,7 +38,7 @@ namespace Catch {
             xml.endElement();
         }
 
-        void writeRun( TestRunNode const& groupNode );
+        void writeRun( TestRunNode const& runNode );
 
         void writeTestFile(StringRef filename, std::vector<TestCaseNode const*> const& testCaseNodes);
 

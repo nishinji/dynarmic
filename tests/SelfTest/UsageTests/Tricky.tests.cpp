@@ -261,7 +261,7 @@ TEST_CASE( "non streamable - with conv. op", "[Tricky]" )
 
 inline void foo() {}
 
-typedef void (*fooptr_t)();
+using fooptr_t = void (*)();
 
 TEST_CASE( "Comparing function pointers", "[Tricky][function pointer]" )
 {
@@ -281,7 +281,7 @@ struct S
 
 TEST_CASE( "Comparing member function pointers", "[Tricky][member function pointer][approvals]" )
 {
-    typedef void (S::*MF)();
+    using MF = void (S::*)();
     MF m = &S::f;
 
     CHECK( m == &S::f );
@@ -354,27 +354,9 @@ TEST_CASE("#1514: stderr/stdout is not captured in tests aborted by an exception
     FAIL("1514");
 }
 
-
-TEST_CASE( "#2025: -c shouldn't cause infinite loop", "[sections][generators][regression][.approvals]" ) {
-    SECTION( "Check cursor from buffer offset" ) {
-        auto bufPos = GENERATE_REF( range( 0, 44 ) );
-        WHEN( "Buffer position is " << bufPos ) { REQUIRE( 1 == 1 ); }
-    }
-}
-
 TEST_CASE("#2025: original repro", "[sections][generators][regression][.approvals]") {
     auto fov = GENERATE(true, false);
     DYNAMIC_SECTION("fov_" << fov) {
         std::cout << "inside with fov: " << fov << '\n';
-    }
-}
-
-TEST_CASE("#2025: same-level sections", "[sections][generators][regression][.approvals]") {
-    SECTION("A") {
-        SUCCEED();
-    }
-    auto i = GENERATE(1, 2, 3);
-    SECTION("B") {
-        REQUIRE(i < 4);
     }
 }

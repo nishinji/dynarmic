@@ -6,6 +6,7 @@
 [Built-in matchers](#built-in-matchers)<br>
 [Writing custom matchers (old style)](#writing-custom-matchers-old-style)<br>
 [Writing custom matchers (new style)](#writing-custom-matchers-new-style)<br>
+[Constexpr matchers](#constexpr-matchers)<br>
 
 Matchers, as popularized by the [Hamcrest](https://en.wikipedia.org/wiki/Hamcrest)
 framework are an alternative way to write assertions, useful for tests
@@ -50,24 +51,42 @@ Both of the string matchers used in the examples above live in the
 `catch_matchers_string.hpp` header, so to compile the code above also
 requires `#include <catch2/matchers/catch_matchers_string.hpp>`.
 
+### Combining operators and lifetimes
+
 **IMPORTANT**: The combining operators do not take ownership of the
-matcher objects being combined. This means that if you store combined
-matcher object, you have to ensure that the matchers being combined
-outlive its last use. What this means is that the following code leads
-to a use-after-free (UAF):
+matcher objects being combined.
 
+This means that if you store combined matcher object, you have to ensure
+that the individual matchers being combined outlive the combined matcher.
+Note that the negation matcher from `!` also counts as combining matcher
+for this.
+
+Explained on an example, this is fine
 ```cpp
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
-
-TEST_CASE("Bugs, bugs, bugs", "[Bug]"){
-    std::string str = "Bugs as a service";
-
-    auto match_expression = Catch::Matchers::EndsWith( "as a service" ) ||
-        (Catch::Matchers::StartsWith( "Big data" ) && !Catch::Matchers::ContainsSubstring( "web scale" ) );
-    REQUIRE_THAT(str, match_expression);
-}
+CHECK_THAT(value, WithinAbs(0, 2e-2) && !WithinULP(0., 1));
 ```
+
+and so is this
+```cpp
+auto is_close_to_zero = WithinAbs(0, 2e-2);
+auto is_zero          = WithinULP(0., 1);
+
+CHECK_THAT(value, is_close_to_zero && !is_zero);
+```
+
+but this is not
+```cpp
+auto is_close_to_zero = WithinAbs(0, 2e-2);
+auto is_zero          = WithinULP(0., 1);
+auto is_close_to_but_not_zero = is_close_to_zero && !is_zero;
+
+CHECK_THAT(a_value, is_close_to_but_not_zero); // UAF
+```
+
+because `!is_zero` creates a temporary instance of Negation matcher,
+which the `is_close_to_but_not_zero` refers to. After the line ends,
+the temporary is destroyed and the combined `is_close_to_but_not_zero`
+matcher now refers to non-existent object, so using it causes use-after-free.
 
 
 ## Built-in matchers
@@ -192,15 +211,36 @@ The other miscellaneous matcher utility is exception matching.
 
 #### Matching exceptions
 
-Catch2 provides a utility macro for asserting that an expression
-throws exception of specific type, and that the exception has desired
-properties. The macro is `REQUIRE_THROWS_MATCHES(expr, ExceptionType, Matcher)`.
+Because exceptions are a bit special, Catch2 has a separate macro for them.
+
+
+The basic form is
+
+```
+REQUIRE_THROWS_MATCHES(expr, ExceptionType, Matcher)
+```
+
+and it checks that the `expr` throws an exception, that exception is derived
+from the `ExceptionType` type, and then `Matcher::match` is called on
+the caught exception.
 
 > `REQUIRE_THROWS_MATCHES` macro lives in `catch2/matchers/catch_matchers.hpp`
 
+For one-off checks you can use the `Predicate` matcher above, e.g.
 
-Catch2 currently provides two matchers for exceptions.
-These are:
+```cpp
+REQUIRE_THROWS_MATCHES(parse(...),
+                       parse_error,
+                       Predicate<parse_error>([] (parse_error const& err) -> bool { return err.line() == 1; })
+);
+```
+
+but if you intend to thoroughly test your error reporting, I recommend
+defining a specialized matcher.
+
+
+Catch2 also provides 2 built-in matchers for checking the error message
+inside an exception (it must be derived from `std::exception`):
 * `Message(std::string message)`.
 * `MessageMatches(Matcher matcher)`.
 
@@ -218,10 +258,7 @@ REQUIRE_THROWS_MATCHES(throwsDerivedException(),  DerivedException,  Message("De
 REQUIRE_THROWS_MATCHES(throwsDerivedException(),  DerivedException,  MessageMatches(StartsWith("DerivedException")));
 ```
 
-Note that `DerivedException` in the example above has to derive from
-`std::exception` for the example to work.
-
-> the exception message matcher lives in `catch2/matchers/catch_matchers_exception.hpp`
+> the exception message matchers live in `catch2/matchers/catch_matchers_exception.hpp`
 
 
 ### Generic range Matchers
@@ -433,6 +470,42 @@ in terms of compilation time. Also note that you can combine old style
 and new style matchers arbitrarily.
 
 > `MatcherGenericBase` lives in `catch2/matchers/catch_matchers_templated.hpp`
+
+
+## Constexpr matchers
+
+> Support for constexpr matchers was introduced in Catch2 3.15.0
+
+When compiled for C++20, the new-style matchers (can) support `constexpr`
+matching, albeit not `constexpr` stringification. The matcher combinators
+require C++26 (or at least P2738) to be `constexpr` compatible.
+
+This can be used together with the `STATIC_REQUIRE_THAT` macro to write
+matcher-based static assertions like this:
+
+```cpp
+TEST_CASE("Constexpr support for matchers", "[constexpr][matchers]") {
+    STATIC_REQUIRE_THAT( 1, MatchAll() );
+    STATIC_REQUIRE_THAT( 1, MatchAll() || MatchAll() );
+    STATIC_REQUIRE_THAT( 1, !!MatchAll() );
+}
+```
+
+### First party constexpr matchers
+
+Some (but not all) of Catch2's generic matchers support `constexpr`
+matching. Currently, this includes:
+
+* `IsEmpty()`
+* `SizeIs(size_t target_size)`, `SizeIs(Matcher size_matcher)`
+* `AllMatch(Matcher element_matcher)`
+* `AnyMatch(Matcher element_matcher)`
+* `NoneMatch(Matcher element_matcher)`
+* `AllTrue()`, `AnyTrue()`, `NoneTrue()`
+* `Contains(T&& target_element, Comparator = std::equal_to<>{})`
+* `Contains(Matcher element_matcher)`
+* `RangeEquals(TargetRangeLike&&, Comparator = std::equal_to<>{})`
+* `UnorderedRangeEquals(TargetRangeLike&&, Comparator = std::equal_to<>{})`
 
 
 ---

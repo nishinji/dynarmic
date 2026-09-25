@@ -307,7 +307,7 @@ void print( std::ostream& os, int const level, std::string const& title, Catch::
 // 2. My listener and registration:
 //
 
-char const * dashed_line =
+char const * const dashed_line =
     "--------------------------------------------------------------------------";
 
 
@@ -385,8 +385,7 @@ struct MyListener : Catch::EventListenerBase {
 CATCH_REGISTER_LISTENER( MyListener )
 
 // Get rid of Wweak-tables
-MyListener::~MyListener() {}
-
+MyListener::~MyListener() = default;
 
 // -----------------------------------------------------------------------
 // 3. Test cases:

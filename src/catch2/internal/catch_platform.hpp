@@ -11,6 +11,9 @@
 // See e.g.:
 // https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/TargetConditionals.h.auto.html
 #ifdef __APPLE__
+#  ifndef __has_extension
+#    define __has_extension(x) 0
+#  endif
 #  include <TargetConditionals.h>
 #  if (defined(TARGET_OS_OSX) && TARGET_OS_OSX == 1) || \
       (defined(TARGET_OS_MAC) && TARGET_OS_MAC == 1)
@@ -21,6 +24,9 @@
 
 #elif defined(linux) || defined(__linux) || defined(__linux__)
 #  define CATCH_PLATFORM_LINUX
+
+#elif defined(__QNX__)
+#  define CATCH_PLATFORM_QNX
 
 #elif defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
 #  define CATCH_PLATFORM_WINDOWS

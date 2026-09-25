@@ -8,11 +8,12 @@
 #ifndef CATCH_STRINGREF_HPP_INCLUDED
 #define CATCH_STRINGREF_HPP_INCLUDED
 
+#include <catch2/internal/catch_lifetimebound.hpp>
+
 #include <cstddef>
 #include <string>
 #include <iosfwd>
 #include <cassert>
-
 #include <cstring>
 
 namespace Catch {
@@ -25,6 +26,8 @@ namespace Catch {
         using size_type = std::size_t;
         using const_iterator = const char*;
 
+        static constexpr size_type npos{ static_cast<size_type>( -1 ) };
+
     private:
         static constexpr char const* const s_empty = "";
 
@@ -34,14 +37,16 @@ namespace Catch {
     public: // construction
         constexpr StringRef() noexcept = default;
 
-        StringRef( char const* rawChars ) noexcept;
+        StringRef( char const* rawChars CATCH_ATTR_LIFETIMEBOUND ) noexcept;
 
-        constexpr StringRef( char const* rawChars, size_type size ) noexcept
+        constexpr StringRef( char const* rawChars CATCH_ATTR_LIFETIMEBOUND,
+                             size_type size ) noexcept
         :   m_start( rawChars ),
             m_size( size )
         {}
 
-        StringRef( std::string const& stdString ) noexcept
+        StringRef(
+            std::string const& stdString CATCH_ATTR_LIFETIMEBOUND ) noexcept
         :   m_start( stdString.c_str() ),
             m_size( stdString.size() )
         {}
@@ -75,7 +80,7 @@ namespace Catch {
         }
 
         // Returns a substring of [start, start + length).
-        // If start + length > size(), then the substring is [start, start + size()).
+        // If start + length > size(), then the substring is [start, size()).
         // If start > size(), then the substring is empty.
         constexpr StringRef substr(size_type start, size_type length) const noexcept {
             if (start < m_size) {
@@ -87,7 +92,7 @@ namespace Catch {
         }
 
         // Returns the current start pointer. May not be null-terminated.
-        constexpr char const* data() const noexcept {
+        constexpr char const* data() const noexcept CATCH_ATTR_LIFETIMEBOUND {
             return m_start;
         }
 
@@ -95,8 +100,8 @@ namespace Catch {
         constexpr const_iterator end() const { return m_start + m_size; }
 
 
-        friend std::string& operator += (std::string& lhs, StringRef sr);
-        friend std::ostream& operator << (std::ostream& os, StringRef sr);
+        friend std::string& operator += (std::string& lhs, StringRef rhs);
+        friend std::ostream& operator << (std::ostream& os, StringRef str);
         friend std::string operator+(StringRef lhs, StringRef rhs);
 
         /**

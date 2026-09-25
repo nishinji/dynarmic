@@ -20,7 +20,6 @@ CATCH_REGISTER_TAG_ALIAS("[@tricky]", "[tricky]~[.]")
 #ifdef __clang__
 #   pragma clang diagnostic ignored "-Wpadded"
 #   pragma clang diagnostic ignored "-Wweak-vtables"
-#   pragma clang diagnostic ignored "-Wc++98-compat"
 #endif
 
 /**
@@ -55,6 +54,7 @@ public:
     ValidatingTestListener(Catch::IConfig const* config) :
         EventListenerBase(config) {
         m_preferences.shouldReportAllAssertions = true;
+        m_preferences.shouldReportAllAssertionStarts = true;
     }
 
     void testRunStarting( Catch::TestRunInfo const& ) override {

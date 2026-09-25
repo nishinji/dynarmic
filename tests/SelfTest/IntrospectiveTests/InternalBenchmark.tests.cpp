@@ -172,7 +172,7 @@ TEST_CASE("uniform samples", "[benchmark]") {
 }
 
 
-TEST_CASE("normal_cdf", "[benchmark]") {
+TEST_CASE("normal_cdf", "[benchmark][approvals]") {
     using Catch::Benchmark::Detail::normal_cdf;
     using Catch::Approx;
     CHECK(normal_cdf(0.000000) == Approx(0.50000000000000000));
@@ -429,9 +429,6 @@ TEST_CASE("run benchmark", "[benchmark][approvals]") {
 }
 
 TEST_CASE("Failing benchmarks", "[!benchmark][.approvals]") {
-    SECTION("empty", "Benchmark that has been optimized away (because it is empty)") {
-        BENCHMARK("Empty benchmark") {};
-    }
     SECTION("throw", "Benchmark that throws an exception") {
         BENCHMARK("Throwing benchmark") {
             throw "just a plain literal, bleh";

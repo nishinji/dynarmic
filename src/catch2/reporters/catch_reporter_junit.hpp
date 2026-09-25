@@ -19,8 +19,6 @@ namespace Catch {
     public:
         JunitReporter(ReporterConfig&& _config);
 
-        ~JunitReporter() override = default;
-
         static std::string getDescription();
 
         void testRunStarting(TestRunInfo const& runInfo) override;
@@ -43,7 +41,7 @@ namespace Catch {
                            bool testOkToFail );
 
         void writeAssertions(SectionNode const& sectionNode);
-        void writeAssertion(AssertionStats const& stats);
+        bool writeAssertion(AssertionStats const& stats);
 
         XmlWriter xml;
         Timer suiteTimer;
