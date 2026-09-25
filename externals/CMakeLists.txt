@@ -20,6 +20,8 @@ set(BUILD_TESTING OFF)
 if (NOT TARGET biscuit::biscuit)
     if ("riscv" IN_LIST ARCHITECTURE)
         add_subdirectory(biscuit)
+        # Keep our -pedantic-errors -Werror away from biscuit's headers
+        set_target_properties(biscuit PROPERTIES SYSTEM ON)
     endif()
 endif()
 
