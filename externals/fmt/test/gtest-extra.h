@@ -1,6 +1,6 @@
 // Formatting library for C++ - custom Google Test assertions
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -14,6 +14,10 @@
 
 #include "fmt/os.h"
 #include "gmock/gmock.h"
+
+#ifdef _MSC_VER
+#  include <crtdbg.h>
+#endif
 
 #define FMT_TEST_THROW_(statement, expected_exception, expected_message, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                \
@@ -77,7 +81,7 @@ class output_redirect {
   void restore();
 
  public:
-  explicit output_redirect(FILE* file);
+  explicit output_redirect(FILE* file, bool flush = true);
   ~output_redirect() noexcept;
 
   output_redirect(const output_redirect&) = delete;
