@@ -737,17 +737,23 @@ void RegAlloc::EmitMove(size_t bit_width, HostLoc to, HostLoc from) {
         }
     } else if (HostLocIsGPR(to) && HostLocIsSpill(from)) {
         ASSERT(bit_width != 128);
+        Xbyak::Address spill_addr = SpillToOpArg(from);
         if (bit_width == 64) {
-            code.mov(HostLocToReg64(to), SpillToOpArg(from));
+            spill_addr.setBit(64);
+            code.mov(HostLocToReg64(to), spill_addr);
         } else {
-            code.mov(HostLocToReg64(to).cvt32(), SpillToOpArg(from));
+            spill_addr.setBit(32);
+            code.mov(HostLocToReg64(to).cvt32(), spill_addr);
         }
     } else if (HostLocIsSpill(to) && HostLocIsGPR(from)) {
         ASSERT(bit_width != 128);
+        Xbyak::Address spill_addr = SpillToOpArg(to);
         if (bit_width == 64) {
-            code.mov(SpillToOpArg(to), HostLocToReg64(from));
+            spill_addr.setBit(64);
+            code.mov(spill_addr, HostLocToReg64(from));
         } else {
-            code.mov(SpillToOpArg(to), HostLocToReg64(from).cvt32());
+            spill_addr.setBit(32);
+            code.mov(spill_addr, HostLocToReg64(from).cvt32());
         }
     } else {
         ASSERT_FALSE("Invalid RegAlloc::EmitMove");
