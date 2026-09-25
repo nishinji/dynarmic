@@ -59,6 +59,7 @@ endif()
 # robin-map
 
 if (NOT TARGET tsl::robin_map)
+    set(TSL_ROBIN_MAP_ENABLE_INSTALL ON)
     add_subdirectory(robin-map)
 endif()
 
