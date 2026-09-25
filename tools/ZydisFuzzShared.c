@@ -39,6 +39,10 @@
 #   include <io.h>
 #endif
 
+#ifdef ZYAN_POSIX
+#   include <unistd.h>
+#endif
+
 /* ============================================================================================== */
 /* Stream reading abstraction                                                                     */
 /* ============================================================================================== */
@@ -46,7 +50,14 @@
 ZyanUSize ZydisStdinRead(void *ctx, ZyanU8* buf, ZyanUSize max_len)
 {
     ZYAN_UNUSED(ctx);
+#ifdef ZYAN_POSIX
+    // `fread` does internal buffering that can result in different code paths to be taken every
+    // time we call it. This is detrimental for fuzzing stability in persistent mode. Use direct
+    // syscall when possible.
+    return read(0, buf, max_len);
+#else
     return fread(buf, 1, max_len, ZYAN_STDIN);
+#endif
 }
 
 #ifdef ZYDIS_LIBFUZZER
@@ -119,7 +130,7 @@ void ZydisPrintInstruction(const ZydisDecodedInstruction* instruction,
 
     char buffer[256];
     ZydisFormatterFormatInstruction(&formatter, instruction, operands, operand_count, buffer,
-        sizeof(buffer), 0, NULL);
+        sizeof(buffer), 0, ZYAN_NULL);
     printf(" %s\n", buffer);
 }
 
@@ -274,46 +285,40 @@ void ZydisValidateInstructionIdentity(const ZydisDecodedInstruction* insn1,
             }
             break;
         case ZYDIS_OPERAND_TYPE_MEMORY:
+        {
+            // Usually this check is done after verifying instruction identity but in this case
+            // we have to fail early
+            if (insn1->length < insn2->length)
+            {
+                fputs("Suboptimal output size detected\n", ZYAN_STDERR);
+                abort();
+            }
+            ZyanU64 addr1, addr2;
+            ZyanStatus status1 = ZydisCalcAbsoluteAddress(insn1, op1, 0, &addr1);
+            ZyanStatus status2 = ZydisCalcAbsoluteAddress(insn2, op2,
+                insn1->length - insn2->length, &addr2);
+            ZyanBool addresses_match = ZYAN_FALSE;
+            if (ZYAN_SUCCESS(status1) && ZYAN_SUCCESS(status2))
+            {
+                if (addr1 != addr2)
+                {
+                    fprintf(ZYAN_STDERR, "Mismatch for memory operand %u (absolute address)\n", i);
+                    abort();
+                }
+                addresses_match = ZYAN_TRUE;
+            }
             if ((op1->mem.type != op2->mem.type) ||
                 (op1->mem.segment != op2->mem.segment) ||
                 (op1->mem.base != op2->mem.base) ||
                 (op1->mem.index != op2->mem.index) ||
-                (op1->mem.scale != op2->mem.scale && op1->mem.type != ZYDIS_MEMOP_TYPE_MIB) ||
-                (op1->mem.disp.value != op2->mem.disp.value))
+                ((op1->mem.scale != op2->mem.scale) && (op1->mem.type != ZYDIS_MEMOP_TYPE_MIB)) ||
+                ((op1->mem.disp.value != op2->mem.disp.value) && !addresses_match))
             {
-                ZyanBool acceptable_mismatch = ZYAN_FALSE;
-                if (op1->mem.disp.value != op2->mem.disp.value)
-                {
-                    if ((op1->mem.disp.has_displacement) &&
-                        (op2->mem.disp.has_displacement) &&
-                        (op1->mem.index == ZYDIS_REGISTER_NONE) &&
-                        ((op1->mem.base == ZYDIS_REGISTER_NONE) ||
-                         (op1->mem.base == ZYDIS_REGISTER_EIP) ||
-                         (op1->mem.base == ZYDIS_REGISTER_RIP)))
-                    {
-                        ZyanU64 addr1, addr2;
-                        ZydisCalcAbsoluteAddress(insn1, op1, 0, &addr1);
-                        ZydisCalcAbsoluteAddress(insn2, op2, 0, &addr2);
-                        acceptable_mismatch = (addr1 == addr2);
-                    }
-                    if ((insn1->machine_mode == ZYDIS_MACHINE_MODE_REAL_16) ||
-                        (insn1->machine_mode == ZYDIS_MACHINE_MODE_LEGACY_16) ||
-                        (insn1->machine_mode == ZYDIS_MACHINE_MODE_LONG_COMPAT_16) ||
-                        (insn1->stack_width == 16) ||
-                        (insn1->address_width == 16) ||
-                        (insn2->address_width == 16))
-                    {
-                        acceptable_mismatch = ((op1->mem.disp.value & 0xFFFF) ==
-                                               (op2->mem.disp.value & 0xFFFF));
-                    }
-                }
-                if (!acceptable_mismatch)
-                {
-                    fprintf(ZYAN_STDERR, "Mismatch for memory operand %u\n", i);
-                    abort();
-                }
+                fprintf(ZYAN_STDERR, "Mismatch for memory operand %u\n", i);
+                abort();
             }
             break;
+        }
         case ZYDIS_OPERAND_TYPE_POINTER:
             if ((op1->ptr.segment != op2->ptr.segment) ||
                 (op1->ptr.offset != op2->ptr.offset))
@@ -358,6 +363,88 @@ void ZydisValidateInstructionIdentity(const ZydisDecodedInstruction* insn1,
 }
 
 #if !defined(ZYDIS_DISABLE_ENCODER)
+
+static void ZydisReEncodeInstructionAbsolute(ZydisEncoderRequest* req,
+    const ZydisDecodedInstruction* insn2, const ZydisDecodedOperand* insn2_operands,
+    const ZyanU8* insn2_bytes)
+{
+    ZyanU64 runtime_address;
+    switch (insn2->address_width)
+    {
+    case 16:
+        runtime_address = (ZyanU64)(ZyanU16)ZYAN_INT16_MIN;
+        break;
+    case 32:
+        runtime_address = (ZyanU64)(ZyanU32)ZYAN_INT32_MIN;
+        break;
+    case 64:
+        runtime_address = (ZyanU64)ZYAN_INT64_MIN;
+        break;
+    default:
+        ZYAN_UNREACHABLE;
+    }
+    if ((insn2->machine_mode != ZYDIS_MACHINE_MODE_LONG_64) && (insn2->operand_width == 16))
+    {
+        runtime_address = (ZyanU64)(ZyanU16)ZYAN_INT16_MIN;
+    }
+    runtime_address -= insn2->length;
+
+    ZyanBool has_relative = ZYAN_FALSE;
+    for (ZyanU8 i = 0; i < req->operand_count; ++i)
+    {
+        const ZydisDecodedOperand *decoded_op = &insn2_operands[i];
+        ZydisEncoderOperand *op = &req->operands[i];
+        ZyanU64 *dst_address = ZYAN_NULL;
+        switch (op->type)
+        {
+        case ZYDIS_OPERAND_TYPE_IMMEDIATE:
+            if (decoded_op->imm.is_relative)
+            {
+                dst_address = &op->imm.u;
+            }
+            break;
+        case ZYDIS_OPERAND_TYPE_MEMORY:
+            if ((decoded_op->mem.base == ZYDIS_REGISTER_EIP) ||
+                (decoded_op->mem.base == ZYDIS_REGISTER_RIP))
+            {
+                dst_address = (ZyanU64 *)&op->mem.displacement;
+            }
+            break;
+        default:
+            break;
+        }
+        if (!dst_address)
+        {
+            continue;
+        }
+        has_relative = ZYAN_TRUE;
+        if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(insn2, decoded_op, runtime_address,
+            dst_address)))
+        {
+            fputs("ZydisCalcAbsoluteAddress has failed\n", ZYAN_STDERR);
+            abort();
+        }
+    }
+    if (!has_relative)
+    {
+        return;
+    }
+
+    ZyanU8 insn1_bytes[ZYDIS_MAX_INSTRUCTION_LENGTH];
+    ZyanUSize insn1_length = sizeof(insn1_bytes);
+    ZyanStatus status = ZydisEncoderEncodeInstructionAbsolute(req, insn1_bytes, &insn1_length,
+        runtime_address);
+    if (!ZYAN_SUCCESS(status))
+    {
+        fputs("Failed to re-encode instruction (absolute)\n", ZYAN_STDERR);
+        abort();
+    }
+    if (insn1_length != insn2->length || ZYAN_MEMCMP(insn1_bytes, insn2_bytes, insn2->length))
+    {
+        fputs("Instruction mismatch (absolute)\n", ZYAN_STDERR);
+        abort();
+    }
+}
 
 void ZydisReEncodeInstruction(const ZydisDecoder *decoder, const ZydisDecodedInstruction *insn1,
     const ZydisDecodedOperand* operands1, ZyanU8 operand_count, const ZyanU8 *insn1_bytes)
@@ -404,6 +491,8 @@ void ZydisReEncodeInstruction(const ZydisDecoder *decoder, const ZydisDecodedIns
         fputs("Suboptimal output size detected\n", ZYAN_STDERR);
         abort();
     }
+
+    ZydisReEncodeInstructionAbsolute(&request, &insn2, operands2, encoded_instruction);
 }
 
 #endif
@@ -412,7 +501,7 @@ void ZydisReEncodeInstruction(const ZydisDecoder *decoder, const ZydisDecodedIns
 /* Entry point                                                                                    */
 /* ============================================================================================== */
 
-int ZydisFuzzerInit()
+int ZydisFuzzerInit(void)
 {
     if (ZydisGetVersion() != ZYDIS_VERSION)
     {
