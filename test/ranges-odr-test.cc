@@ -1,12 +1,13 @@
 // Formatting library for C++ - the core API
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
 
 #include <vector>
 
+#include "fmt/format.h"
 #include "fmt/ranges.h"
 #include "gtest/gtest.h"
 

@@ -1,6 +1,6 @@
 // Formatting library for C++ - custom Google Test assertions
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -11,16 +11,16 @@
 
 using fmt::file;
 
-output_redirect::output_redirect(FILE* f) : file_(f) {
-  flush();
+output_redirect::output_redirect(FILE* f, bool flush) : file_(f) {
+  if (flush) this->flush();
   int fd = FMT_POSIX(fileno(f));
   // Create a file object referring to the original file.
   original_ = file::dup(fd);
   // Create a pipe.
-  file write_end;
-  file::pipe(read_end_, write_end);
+  auto pipe = fmt::pipe();
+  read_end_ = std::move(pipe.read_end);
   // Connect the passed FILE object to the write end of the pipe.
-  write_end.dup2(fd);
+  pipe.write_end.dup2(fd);
 }
 
 output_redirect::~output_redirect() noexcept {
