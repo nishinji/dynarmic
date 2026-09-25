@@ -1,11 +1,28 @@
-#define XBYAK_NO_OP_NAMES
 #include <xbyak/xbyak_util.h>
+#include <cinttypes>
+#include <cstring>
+#include <vector>
+#include <map>
 
 #ifdef XBYAK32
 	#error "this sample is for only 64-bit mode"
 #endif
 
 using namespace Xbyak::util;
+
+#ifndef DUMP
+#ifdef _MSC_VER
+	#pragma warning(disable : 4459)
+	#pragma warning(disable : 4996)
+#endif
+#include <cybozu/test.hpp>
+
+#ifdef XBYAK64_WIN
+#include "sf_test_win.h"
+#endif
+#ifdef XBYAK64_GCC
+#include "sf_test_gcc.h"
+#endif
 
 struct Code : public Xbyak::CodeGenerator {
 	void gen1()
@@ -170,13 +187,26 @@ struct Code : public Xbyak::CodeGenerator {
 		Pack t = sf.t;
 		t.append(rax);
 		for (int i = 0; i < 15; i++) {
-			mov(t[i], 1 << i);
+			mov(t[i], uint64_t(1) << i);
 		}
 		mov(qword[rsp], 0);
 		for (int i = 0; i < 15; i++) {
 			add(ptr[rsp], t[i]);
 		}
 		mov(rax, ptr[rsp]);
+	}
+	// use rbx
+	void gen16()
+	{
+		{	// sf.t[8] is rbx on windows/linux
+			StackFrame sf(this, 0, 9);
+			CYBOZU_TEST_ASSERT(sf.t[8] == rbx);
+		}
+		{	// sf.t[8] is rbp (not rbx) on windows/linux
+			// getRegEntryTbl() in xbyak_util.h
+			StackFrame sf(this, 0, 9|UseRBX);
+			CYBOZU_TEST_ASSERT(sf.t[8] == rbp);
+		}
 	}
 };
 
@@ -209,32 +239,24 @@ struct Code2 : Xbyak::CodeGenerator {
 };
 
 
-static int errNum = 0;
-void check(int x, int y)
+void verify(const uint8_t *_f, int pNum)
 {
-	if (x != y) {
-		printf("err x=%d, y=%d\n", x, y);
-		errNum++;
-	}
-}
-
-void verify(const uint8_t *f, int pNum)
-{
+	uint8_t *f = const_cast<uint8_t*>(_f);
 	switch (pNum) {
 	case 0:
-		check(1, reinterpret_cast<int (*)()>(f)());
+		CYBOZU_TEST_EQUAL(1, reinterpret_cast<int (*)()>(f)());
 		return;
 	case 1:
-		check(11, reinterpret_cast<int (*)(int)>(f)(10));
+		CYBOZU_TEST_EQUAL(11, reinterpret_cast<int (*)(int)>(f)(10));
 		return;
 	case 2:
-		check(111, reinterpret_cast<int (*)(int, int)>(f)(10, 100));
+		CYBOZU_TEST_EQUAL(111, reinterpret_cast<int (*)(int, int)>(f)(10, 100));
 		return;
 	case 3:
-		check(1111, reinterpret_cast<int (*)(int, int, int)>(f)(10, 100, 1000));
+		CYBOZU_TEST_EQUAL(1111, reinterpret_cast<int (*)(int, int, int)>(f)(10, 100, 1000));
 		return;
 	case 4:
-		check(11111, reinterpret_cast<int (*)(int, int, int, int)>(f)(10, 100, 1000, 10000));
+		CYBOZU_TEST_EQUAL(11111, reinterpret_cast<int (*)(int, int, int, int)>(f)(10, 100, 1000, 10000));
 		return;
 	default:
 		printf("ERR pNum=%d\n", pNum);
@@ -242,7 +264,7 @@ void verify(const uint8_t *f, int pNum)
 	}
 }
 
-void testAll()
+CYBOZU_TEST_AUTO(param)
 {
 	Code2 code;
 	for (int stackSize = 0; stackSize < 32; stackSize += 7) {
@@ -274,7 +296,7 @@ void testAll()
 						Code2 c2;
 						c2.gen2(pNum, tNum | opt, stackSize);
 						uint64_t addr = c2.getCode<uint64_t (*)()>()();
-						check(addr % 16, 0);
+						CYBOZU_TEST_EQUAL(addr % 16, 0);
 					}
 				}
 			}
@@ -282,70 +304,73 @@ void testAll()
 	}
 }
 
-void testPartial()
+CYBOZU_TEST_AUTO(args)
 {
 	Code code;
 	int (*f1)(int) = code.getCurr<int (*)(int)>();
 	code.gen1();
-	check(5, f1(5));
+	CYBOZU_TEST_EQUAL(5, f1(5));
 
 	int (*f2)(int, int) = code.getCurr<int (*)(int, int)>();
 	code.gen2();
-	check(9, f2(3, 6));
+	CYBOZU_TEST_EQUAL(9, f2(3, 6));
 
 	int (*f3)(int, int, int) = code.getCurr<int (*)(int, int, int)>();
 	code.gen3();
-	check(14, f3(1, 4, 9));
+	CYBOZU_TEST_EQUAL(14, f3(1, 4, 9));
 
 	int (*f4)(int, int, int, int) = code.getCurr<int (*)(int, int, int, int)>();
 	code.gen4();
-	check(30, f4(1, 4, 9, 16));
+	CYBOZU_TEST_EQUAL(30, f4(1, 4, 9, 16));
 
 	int (*f5)(int, int, int, int) = code.getCurr<int (*)(int, int, int, int)>();
 	code.gen5();
-	check(23, f5(2, 5, 7, 9));
+	CYBOZU_TEST_EQUAL(23, f5(2, 5, 7, 9));
 
 	int (*f6)(int, int, int, int) = code.getCurr<int (*)(int, int, int, int)>();
 	code.gen6();
-	check(18, f6(3, 4, 5, 6));
+	CYBOZU_TEST_EQUAL(18, f6(3, 4, 5, 6));
 
 	int (*f7)(int, int, int) = code.getCurr<int (*)(int, int, int)>();
 	code.gen7();
-	check(12, f7(3, 4, 5));
+	CYBOZU_TEST_EQUAL(12, f7(3, 4, 5));
 
 	int (*f8)(int, int, int) = code.getCurr<int (*)(int, int, int)>();
 	code.gen8();
-	check(23, f8(5, 8, 10));
+	CYBOZU_TEST_EQUAL(23, f8(5, 8, 10));
 
 	int (*f9)(int, int, int) = code.getCurr<int (*)(int, int, int)>();
 	code.gen9();
-	check(60, f9(10, 20, 30));
+	CYBOZU_TEST_EQUAL(60, f9(10, 20, 30));
 
 	int (*f10)(int, int, int, int) = code.getCurr<int (*)(int, int, int, int)>();
 	code.gen10();
-	check(100, f10(10, 20, 30, 40));
+	CYBOZU_TEST_EQUAL(100, f10(10, 20, 30, 40));
 
 	int (*f11)() = code.getCurr<int (*)()>();
 	code.gen11();
-	check(3, f11());
+	CYBOZU_TEST_EQUAL(3, f11());
 
 	int (*f12)(int, int, int, int) = code.getCurr<int (*)(int, int, int, int)>();
 	code.gen12();
-	check(24, f12(3, 5, 7, 9));
+	CYBOZU_TEST_EQUAL(24, f12(3, 5, 7, 9));
 
 	{
 		int64_t tbl[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
 		int64_t (*f13)(const int64_t*) = code.getCurr<int64_t (*)(const int64_t*)>();
 		code.gen13();
-		check(91, f13(tbl));
+		CYBOZU_TEST_EQUAL(91, f13(tbl));
 
 		int64_t (*f14)(const int64_t*) = code.getCurr<int64_t (*)(const int64_t*)>();
 		code.gen14();
-		check(91, f14(tbl));
+		CYBOZU_TEST_EQUAL(91, f14(tbl));
 	}
 	int (*f15)() = code.getCurr<int (*)()>();
 	code.gen15();
-	check((1 << 15) - 1, f15());
+	CYBOZU_TEST_EQUAL((1 << 15) - 1, f15());
+
+	// UserRBP test
+	code.gen16();
 }
 
 void put(const Xbyak::util::Pack& p)
@@ -359,11 +384,11 @@ void put(const Xbyak::util::Pack& p)
 void verifyPack(const Xbyak::util::Pack& p, const int *tbl, size_t tblNum)
 {
 	for (size_t i = 0; i < tblNum; i++) {
-		check(p[i].getIdx(), tbl[i]);
+		CYBOZU_TEST_EQUAL(p[i].getIdx(), tbl[i]);
 	}
 }
 
-void testPack()
+CYBOZU_TEST_AUTO(pack)
 {
 	const int N = 10;
 	Xbyak::Reg64 regTbl[N];
@@ -398,19 +423,555 @@ void testPack()
 	}
 }
 
-int main()
-	try
-{
-	testAll();
+struct CloseCode : Xbyak::CodeGenerator {
+	CloseCode(size_t mode)
+	{
+		switch (mode) {
+		case 0:
+			{
+				StackFrame sf(this, 0);
+				// close() is automatically called.
+			}
+			break;
 
-	testPartial();
-	testPack();
-	printf("errNum=%d\n", errNum);
-} catch (std::exception& e) {
-	printf("err %s\n", e.what());
-	return 1;
-} catch (...) {
-	puts("ERR");
-	return 1;
+		case 1:
+			{
+				StackFrame sf(this, 0, 0, 0, false);
+				sf.close(); // Explicitly call close().
+				setProtectModeRE(); // Ensure that no writes occur in destructor by setting read-exec
+			}
+			break;
+
+		case 2:
+			{
+				StackFrame sf(this, 0, 0, 0, false);
+				sf.close(); // Explicitly call close().
+				sf.close(); // Explicitly call close().
+				setProtectModeRE(); // Ensure that no writes occur in destructor by setting read-exec
+			}
+			break;
+		default:
+			CYBOZU_TEST_ASSERT(false);
+		}
+	}
+};
+
+CYBOZU_TEST_AUTO(close)
+{
+	const size_t expectedTbl[] = {
+		1, 1, 2,
+	};
+	for (size_t i = 0; i < sizeof(expectedTbl)/sizeof(expectedTbl[0]); i++) {
+		CloseCode c(i);
+		CYBOZU_TEST_EQUAL(c.getSize(), expectedTbl[i]);
+	}
+}
+#endif
+
+struct ParamId {
+	int pNum;
+	int tNum;
+	int useRegs;
+	int stackSizeByte;
+	struct encoded {
+		uint8_t pNum;
+		uint8_t tNum;
+		uint16_t useRegsLow;
+		uint16_t useRegsHigh;
+		uint8_t stackSizeByte;
+		uint8_t reserved;
+	};
+	uint64_t id() const
+	{
+		encoded e;
+		uint32_t ur = uint32_t(useRegs) >> 5;
+		e.pNum = uint8_t(pNum);
+		e.tNum = uint8_t(tNum);
+		e.useRegsLow = uint16_t(ur);
+		e.useRegsHigh = uint16_t(ur >> 16);
+		e.stackSizeByte = uint8_t(stackSizeByte);
+		e.reserved = 0;
+		uint64_t v;
+		memcpy(&v, &e, sizeof(v));
+		return v;
+	};
+	void set_id(uint64_t v)
+	{
+		encoded e;
+		memcpy(&e, &v, sizeof(e));
+		pNum = e.pNum;
+		tNum = e.tNum;
+		useRegs = int(uint32_t(e.useRegsLow) | (uint32_t(e.useRegsHigh) << 16)) << 5;
+		stackSizeByte = e.stackSizeByte;
+	}
+};
+
+typedef std::vector<uint8_t> Bytes;
+
+#ifndef DUMP
+void cmpAndDumpIfFailed(int rhs, int lhs, const Bytes& d)
+{
+	CYBOZU_TEST_EQUAL(rhs, lhs);
+	if (rhs != lhs) {
+		FILE *fp = fopen("dump.bin", "wb");
+		fwrite(d.data(), 1, d.size(), fp);
+		fclose(fp);
+		exit(1);
+	}
+}
+#endif
+
+struct Data {
+	ParamId paramId;
+	Bytes code;
+};
+typedef std::map<uint64_t, Data> DataMap;
+
+void stackFrameTest()
+{
+	DataMap dataMap;
+
+	struct Code : Xbyak::CodeGenerator {
+		Code(int pNum, int tNum, int useRegs, int stackSizeByte)
+		{
+			StackFrame sf(this, pNum, tNum|useRegs, stackSizeByte);
+			// modify
+			for (int i = 0; i < tNum; i++) {
+				mov(sf.t[i], 12345);
+			}
+			if (useRegs & UseRCX) {
+				mov(rcx, 12345);
+			}
+			if (useRegs & UseRDX) {
+				mov(rdx, 12345);
+			}
+			if (useRegs & UseRSI) {
+				mov(rsi, 1000);
+			}
+			if (useRegs & UseRDI) {
+				mov(rdi, 2000);
+			}
+			// use rbp if UseRBP and !UseRBPAsFramePointer
+			if ((useRegs & UseRBPAsFramePointer) == UseRBP) {
+				mov(rbp, 3000);
+			}
+			// eax is sum of all params and (esp & 15) if stackSizeByte > 0
+			if (stackSizeByte > 0) {
+				mov(eax, esp);
+				and_(eax, 15);
+			} else {
+				xor_(eax, eax);
+			}
+			for (int i = 0; i < pNum; i++) {
+				add(rax, sf.p[i]);
+			}
+		}
+	};
+	static const uint8_t stackSizeTbl[] = { 0, 33 };
+	for (int pNum = 0; pNum <= 4; pNum++) {
+		for (int tNum = 0; tNum <= 14; tNum++) {
+			// skip middle middle values of tNum to keep the headers small
+			if (3 < tNum && tNum < 13) continue;
+			for (int i = 0; i < (1<<6); i++) {
+				int totalNum = pNum + tNum;
+				int useRegs = 0;
+				if (i & 1) { useRegs |= UseRCX; totalNum++; }
+				if (i & 2) { useRegs |= UseRDX; totalNum++; }
+				if (i & 4) { useRegs |= UseRSI; totalNum++; }
+				if (i & 8) { useRegs |= UseRDI; totalNum++; }
+				// UseRBP and UseRBPAsFramePointer are mutually exclusive
+				if (i & 16) { useRegs |= UseRBP; totalNum++; }
+				if (!(i & 16) && (i & 32)) { useRegs |= UseRBPAsFramePointer; totalNum++; }
+				if (totalNum > 14) continue;
+				for (size_t j = 0; j < sizeof(stackSizeTbl)/sizeof(stackSizeTbl[0]); j++) {
+					int stackSizeByte = stackSizeTbl[j];
+//fprintf(stderr, "pNum=%d, tNum=%d, useRegs=0x%X stackSizeByte=%d\n", pNum, tNum, useRegs, stackSizeByte);
+					Code c(pNum, tNum, useRegs, stackSizeByte);
+//fprintf(stderr, "code size = %d\n", int(c.getSize()));
+					Data d;
+					d.paramId.pNum = pNum;
+					d.paramId.tNum = tNum;
+					d.paramId.useRegs = useRegs;
+					d.paramId.stackSizeByte = stackSizeByte;
+					d.code.assign(c.getCode(), c.getCode() + c.getSize());
+					dataMap[d.paramId.id()] = d;
+#ifndef DUMP
+					switch (pNum) {
+					case 0:
+						{
+							int (*f)() = c.getCode<int (*)()>();
+							CYBOZU_TEST_EQUAL(0, f());
+//							cmpAndDumpIfFailed(0, f(), d.code);
+							break;
+						}
+					case 1:
+						{
+							int (*f1)(int) = c.getCode<int (*)(int)>();
+							CYBOZU_TEST_EQUAL(1, f1(1));
+							break;
+						}
+					case 2:
+						{
+							int (*f2)(int, int) = c.getCode<int (*)(int, int)>();
+							CYBOZU_TEST_EQUAL(11, f2(1, 10));
+							break;
+						}
+					case 3:
+						{
+							int (*f3)(int, int, int) = c.getCode<int (*)(int, int, int)>();
+							CYBOZU_TEST_EQUAL(111, f3(1, 10, 100));
+							break;
+						}
+					case 4:
+						{
+							int (*f4)(int, int, int, int) = c.getCode<int (*)(int, int, int, int)>();
+							CYBOZU_TEST_EQUAL(1111, f4(1, 10, 100, 1000));
+							break;
+						}
+					}
+#endif
+				}
+			}
+		}
+	}
+	// UseSSE(n)/UseAVX(n) : xmm save/restore (Win64), vzeroupper and NoVzeroupper
+#ifndef DUMP
+	const bool hasAvx = Xbyak::util::Cpu().has(Xbyak::util::Cpu::tAVX);
+#endif
+	static const uint8_t vecNumTbl[] = { 0, 1, 6, 7, 8, 15, 16, 32 };
+	for (int kind = 0; kind < 2; kind++) { // 0: UseSSE, 1: UseAVX
+		for (size_t vi = 0; vi < sizeof(vecNumTbl)/sizeof(vecNumTbl[0]); vi++) {
+			const int vecNum = vecNumTbl[vi];
+			if (kind == 0 && vecNum > 16) continue;
+			for (int noVz = 0; noVz < (kind == 0 ? 1 : 2); noVz++) {
+				for (int useRbp = 0; useRbp < 2; useRbp++) { // flip the parity of saveNum_
+					for (size_t j = 0; j < sizeof(stackSizeTbl)/sizeof(stackSizeTbl[0]); j++) {
+						const int stackSizeByte = stackSizeTbl[j];
+						int useRegs = kind == 0 ? UseSSE(vecNum) : UseAVX(vecNum);
+						if (noVz) useRegs |= NoVzeroupper;
+						if (useRbp) useRegs |= UseRBP;
+						Code c(1, 0, useRegs, stackSizeByte);
+						Data d;
+						d.paramId.pNum = 1;
+						d.paramId.tNum = 0;
+						d.paramId.useRegs = useRegs;
+						d.paramId.stackSizeByte = stackSizeByte;
+						d.code.assign(c.getCode(), c.getCode() + c.getSize());
+						dataMap[d.paramId.id()] = d;
+#ifndef DUMP
+						// vzeroupper/vmovaps require AVX
+						if (kind == 1 && !hasAvx) continue;
+						int (*f1)(int) = c.getCode<int (*)(int)>();
+						CYBOZU_TEST_EQUAL(1, f1(1));
+#endif
+					}
+				}
+			}
+		}
+	}
+#ifdef DUMP
+		for (DataMap::const_iterator it = dataMap.begin(); it != dataMap.end(); ++it) {
+			const Data& d = it->second;
+			printf("static const uint8_t code_%" PRIx64 "[] = {\n", d.paramId.id());
+			for (size_t j = 0; j < d.code.size(); j++) {
+				if (j % 16 == 0) {
+					if (j > 0) printf("\n");
+					printf("\t");
+				}
+				if (j > 0) printf(" ");
+				printf("0x%02x,", d.code[j]);
+			}
+			printf("\n};\n");
+		}
+		printf("static const struct {\n");
+		printf("\tuint64_t paramId;\n");
+		printf("\tconst uint8_t *code;\n");
+		printf("\tsize_t codeSize;\n");
+		printf("} g_dataVec[] = {\n");
+		for (DataMap::const_iterator it = dataMap.begin(); it != dataMap.end(); ++it) {
+			const Data& d = it->second;
+			printf("\t{ 0x%" PRIx64 ", code_%" PRIx64 ", %zu },\n", d.paramId.id(), d.paramId.id(), d.code.size());
+		}
+		printf("};\n");
+#else
+		DataMap dataMapExpected;
+		for (size_t i = 0; i < sizeof(g_dataVec) / sizeof(*g_dataVec); i++) {
+			const uint64_t id = g_dataVec[i].paramId;
+			Data d;
+			d.paramId.set_id(id);
+			d.code.assign(g_dataVec[i].code, g_dataVec[i].code + g_dataVec[i].codeSize);
+			dataMapExpected[id] = d;
+		}
+		CYBOZU_TEST_EQUAL(dataMap.size(), dataMapExpected.size());
+		for (DataMap::const_iterator it = dataMapExpected.begin(); it != dataMapExpected.end(); ++it) {
+			const uint64_t id = it->first;
+			DataMap::const_iterator it2 = dataMap.find(id);
+			CYBOZU_TEST_ASSERT(it2 != dataMap.end());
+			const Data& d = it2->second;
+			const Data& dExpected = it->second;
+			CYBOZU_TEST_EQUAL(d.code.size(), dExpected.code.size());
+			CYBOZU_TEST_EQUAL_ARRAY(d.code.data(), dExpected.code.data(), d.code.size());
+		}
+#endif
 }
 
+/*
+	Test StackFrame APX flag combinations.
+	Covers UsePUSH2, UsePPX, UsePUSH2|UsePPX, UseR30R31 and combinations.
+	A small parameter/register subset keeps the golden file manageable.
+*/
+void apxStackFrameTest()
+{
+	DataMap dataMap;
+
+	struct Code : Xbyak::CodeGenerator {
+		Code(int pNum, int tNum, int useRegs, int stackSizeByte)
+		{
+			StackFrame sf(this, pNum, tNum|useRegs, stackSizeByte);
+			for (int i = 0; i < tNum; i++) {
+				mov(sf.t[i], 12345);
+			}
+			if (useRegs & UseRCX) mov(rcx, 12345);
+			if (useRegs & UseRDX) mov(rdx, 12345);
+			if (useRegs & UseRSI) mov(rsi, 1000);
+			if (useRegs & UseRDI) mov(rdi, 2000);
+			if ((useRegs & UseRBPAsFramePointer) == UseRBP) mov(rbp, 3000);
+			if (useRegs & UseR30R31) {
+				mov(r30, 4321);
+				mov(r31, 8765);
+			}
+			if (stackSizeByte > 0) {
+				mov(eax, esp);
+				and_(eax, 15);
+			} else {
+				xor_(eax, eax);
+			}
+			for (int i = 0; i < pNum; i++) {
+				add(rax, sf.p[i]);
+			}
+		}
+	};
+	static const int apxFlagCombos[] = {
+		UsePUSH2,
+		UsePPX,
+		UsePUSH2 | UsePPX,
+		UseR30R31,
+		UseR30R31 | UsePUSH2 | UsePPX,
+	};
+	static const uint8_t stackSizeTbl[] = { 0, 33 };
+	for (size_t ai = 0; ai < sizeof(apxFlagCombos)/sizeof(apxFlagCombos[0]); ai++) {
+		const int apxFlags = apxFlagCombos[ai];
+		// Limit pNum/tNum/useRegs to a representative subset to keep the golden file small.
+		for (int pNum = 0; pNum <= 2; pNum++) {
+			for (int tNum = 0; tNum <= 4; tNum++) {
+				// First 16 useRegs combos (bits 0..3: UseRCX, UseRDX, UseRSI, UseRDI)
+				for (int i = 0; i < 16; i++) {
+					int totalNum = pNum + tNum;
+					int useRegs = apxFlags;
+					if (i & 1) { useRegs |= UseRCX; totalNum++; }
+					if (i & 2) { useRegs |= UseRDX; totalNum++; }
+					if (i & 4) { useRegs |= UseRSI; totalNum++; }
+					if (i & 8) { useRegs |= UseRDI; totalNum++; }
+					// UseR30R31 doesn't consume any of the 14 managed slots (r30/r31 are
+					// outside StackFrame's allocation table); this accounting is only a
+					// heuristic to keep the golden file from growing too large.
+					if (useRegs & UseR30R31) totalNum += 2;
+					if (totalNum > 14) continue;
+					for (size_t j = 0; j < sizeof(stackSizeTbl)/sizeof(stackSizeTbl[0]); j++) {
+						int stackSizeByte = stackSizeTbl[j];
+						Code c(pNum, tNum, useRegs, stackSizeByte);
+						Data d;
+						d.paramId.pNum = pNum;
+						d.paramId.tNum = tNum;
+						d.paramId.useRegs = useRegs;
+						d.paramId.stackSizeByte = stackSizeByte;
+						d.code.assign(c.getCode(), c.getCode() + c.getSize());
+						dataMap[d.paramId.id()] = d;
+#ifndef DUMP
+						// APX instructions (push2, push2p, pushp etc.) require APX_F; skip execution otherwise.
+						static const bool hasApx = Xbyak::util::Cpu().has(Xbyak::util::Cpu::tAPX_F);
+						if (!hasApx) continue;
+						switch (pNum) {
+						case 0:
+							{
+								int (*f)() = c.getCode<int (*)()>();
+								CYBOZU_TEST_EQUAL(0, f());
+								break;
+							}
+						case 1:
+							{
+								int (*f1)(int) = c.getCode<int (*)(int)>();
+								CYBOZU_TEST_EQUAL(1, f1(1));
+								break;
+							}
+						case 2:
+							{
+								int (*f2)(int, int) = c.getCode<int (*)(int, int)>();
+								CYBOZU_TEST_EQUAL(11, f2(1, 10));
+								break;
+							}
+						}
+#endif
+					}
+				}
+			}
+		}
+	}
+#ifdef DUMP
+	for (DataMap::const_iterator it = dataMap.begin(); it != dataMap.end(); ++it) {
+		const Data& d = it->second;
+		printf("static const uint8_t apx_code_%" PRIx64 "[] = {\n", d.paramId.id());
+		for (size_t j = 0; j < d.code.size(); j++) {
+			if (j % 16 == 0) {
+				if (j > 0) printf("\n");
+				printf("\t");
+			}
+			if (j > 0) printf(" ");
+			printf("0x%02x,", d.code[j]);
+		}
+		printf("\n};\n");
+	}
+	printf("static const struct {\n");
+	printf("\tuint64_t paramId;\n");
+	printf("\tconst uint8_t *code;\n");
+	printf("\tsize_t codeSize;\n");
+	printf("} g_apxDataVec[] = {\n");
+	for (DataMap::const_iterator it = dataMap.begin(); it != dataMap.end(); ++it) {
+		const Data& d = it->second;
+		printf("\t{ 0x%" PRIx64 ", apx_code_%" PRIx64 ", %zu },\n", d.paramId.id(), d.paramId.id(), d.code.size());
+	}
+	printf("};\n");
+#else
+	DataMap dataMapExpected;
+	for (size_t i = 0; i < sizeof(g_apxDataVec) / sizeof(*g_apxDataVec); i++) {
+		const uint64_t id = g_apxDataVec[i].paramId;
+		Data d;
+		d.paramId.set_id(id);
+		d.code.assign(g_apxDataVec[i].code, g_apxDataVec[i].code + g_apxDataVec[i].codeSize);
+		dataMapExpected[id] = d;
+	}
+	CYBOZU_TEST_EQUAL(dataMap.size(), dataMapExpected.size());
+	for (DataMap::const_iterator it = dataMapExpected.begin(); it != dataMapExpected.end(); ++it) {
+		const uint64_t id = it->first;
+		DataMap::const_iterator it2 = dataMap.find(id);
+		CYBOZU_TEST_ASSERT(it2 != dataMap.end());
+		const Data& d = it2->second;
+		const Data& dExpected = it->second;
+		CYBOZU_TEST_EQUAL(d.code.size(), dExpected.code.size());
+		CYBOZU_TEST_EQUAL_ARRAY(d.code.data(), dExpected.code.data(), d.code.size());
+	}
+#endif
+}
+
+#ifdef DUMP
+int main()
+{
+	stackFrameTest();
+	apxStackFrameTest();
+}
+#else
+CYBOZU_TEST_AUTO(stackFrame)
+{
+	stackFrameTest();
+}
+CYBOZU_TEST_AUTO(stackFrameApx)
+{
+	apxStackFrameTest();
+}
+// rbp must be pushed with pushp (not push) when UsePPX is specified
+// so that the pushp/popp pair is matched for the PPX hint
+CYBOZU_TEST_AUTO(rbpWithPpx)
+{
+	struct Code : Xbyak::CodeGenerator {
+		Code()
+		{
+			StackFrame sf(this, 0, UseRBP|UsePPX);
+		}
+	} c;
+	const uint8_t tbl[] = {
+		0xd5, 0x08, 0x55, // pushp rbp
+		0xd5, 0x08, 0x5d, // popp rbp
+		0xc3, // ret
+	};
+	const size_t n = sizeof(tbl);
+	CYBOZU_TEST_EQUAL(c.getSize(), n);
+	CYBOZU_TEST_EQUAL_ARRAY(c.getCode(), tbl, n);
+}
+CYBOZU_TEST_AUTO(vecFlagError)
+{
+	Xbyak::CodeGenerator code;
+	CYBOZU_TEST_EXCEPTION(StackFrame(&code, 0, UseSSE(1)|UseAVX(1)), Xbyak::Error);
+	CYBOZU_TEST_EXCEPTION(StackFrame(&code, 0, UseSSE(17)), Xbyak::Error);
+	// NoVzeroupper requires UseAVX
+	CYBOZU_TEST_EXCEPTION(StackFrame(&code, 0, UseSSE(3)|NoVzeroupper), Xbyak::Error);
+	CYBOZU_TEST_EXCEPTION(StackFrame(&code, 0, NoVzeroupper), Xbyak::Error);
+	CYBOZU_TEST_EXCEPTION(StackFrame(&code, 0, UseAVX(33)), Xbyak::Error);
+	CYBOZU_TEST_NO_EXCEPTION(StackFrame(&code, 0, UseSSE(16)));
+	CYBOZU_TEST_NO_EXCEPTION(StackFrame(&code, 0, UseAVX(32)));
+	CYBOZU_TEST_NO_EXCEPTION(StackFrame(&code, 0, UseAVX(8)|NoVzeroupper));
+}
+// rsp must be 16-byte aligned whenever the xmm save area exists (Win64)
+CYBOZU_TEST_AUTO(vecAlign)
+{
+	struct AlignCode : Xbyak::CodeGenerator {
+		AlignCode(int useRegs, int stackSizeByte)
+		{
+			StackFrame sf(this, 0, useRegs, stackSizeByte);
+			mov(eax, esp);
+			and_(eax, 15);
+		}
+	};
+#ifdef XBYAK64_WIN
+	const int expected = 0; // the xmm save area forces 16-byte alignment
+#else
+	const int expected = 8; // no save area on SysV; rsp stays as it is at entry
+#endif
+	AlignCode c1(UseSSE(8), 0);
+	CYBOZU_TEST_EQUAL(expected, c1.getCode<int (*)()>()());
+	AlignCode c2(UseSSE(8), 33);
+	CYBOZU_TEST_EQUAL(0, c2.getCode<int (*)()>()());
+	if (Xbyak::util::Cpu().has(Xbyak::util::Cpu::tAVX)) {
+		AlignCode c3(UseAVX(16)|NoVzeroupper, 0);
+		CYBOZU_TEST_EQUAL(expected, c3.getCode<int (*)()>()());
+	}
+}
+#ifdef XBYAK64_WIN
+// the callee must restore the values of xmm6-15 which the caller loaded
+CYBOZU_TEST_AUTO(vecSaveRestore)
+{
+	using namespace Xbyak;
+	struct Callee : Xbyak::CodeGenerator {
+		Callee()
+		{
+			StackFrame sf(this, 0, UseSSE(16));
+			for (int i = 0; i < 16; i++) {
+				pxor(Xmm(i), Xmm(i));
+			}
+		}
+	} callee;
+	struct Caller : Xbyak::CodeGenerator {
+		explicit Caller(const void *f)
+		{
+			StackFrame sf(this, 2, UseRSI|UseRDI|UseSSE(16));
+			mov(rsi, sf.p[0]); // src
+			mov(rdi, sf.p[1]); // dst
+			for (int i = 0; i < 10; i++) {
+				movups(Xmm(6 + i), ptr[rsi + i * 16]);
+			}
+			mov(rax, size_t(f));
+			call(rax);
+			for (int i = 0; i < 10; i++) {
+				movups(ptr[rdi + i * 16], Xmm(6 + i));
+			}
+		}
+	} caller(callee.getCode<const void*>());
+	uint32_t src[40], dst[40];
+	for (int i = 0; i < 40; i++) {
+		src[i] = uint32_t(i * 0x01010101 + 0x12345678);
+		dst[i] = 0;
+	}
+	caller.getCode<void (*)(const uint32_t*, uint32_t*)>()(src, dst);
+	CYBOZU_TEST_EQUAL_ARRAY(src, dst, 40);
+}
+#endif
+#endif // DUMP

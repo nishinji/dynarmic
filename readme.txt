@@ -1,5 +1,5 @@
 
-    C++用x86(IA-32), x64(AMD64, x86-64) JITアセンブラ Xbyak 7.05
+    C++用x86(IA-32), x64(AMD64, x86-64) JITアセンブラ Xbyak 7.42
 
 -----------------------------------------------------------------------------
 ◎概要
@@ -14,7 +14,7 @@
     xbyak.hをインクルードするだけですぐ利用することができます。
     C++の枠組み内で閉じているため、外部アセンブラは不要です。
     32bit/64bit両対応です。
-    対応ニーモニック:特権命令除くx86, MMX/MMX2/SSE/SSE2/SSE3/SSSE3/SSE4/FPU(一部)/AVX/AVX2/FMA/VEX-encoded GPR
+    対応ニーモニック:特権命令除くx86, MMX/MMX2/SSE/SSE2/SSE3/SSSE3/SSE4/FPU(一部)/AVX/AVX2/FMA/AVX-512/APX/AVX10.2
 
 ・Windows Xp(32bit, 64bit), Windows 7/Linux(32bit, 64bit)/Intel Mac対応
     Windows Xp, Windows 7上ではVC2008, VC2010, VC2012
@@ -46,7 +46,7 @@ Linuxではmake installで/usr/local/include/xbyakにコピーされます。
 -----------------------------------------------------------------------------
 ◎新機能
 
-APX/AVX10対応
+APX/AVX10.2対応
 
 例外なしモード追加
 XBYAK_NO_EXCEPTIONを定義してコンパイルするとgcc/clangで-fno-exceptionsオプションでコンパイルできます。
@@ -54,6 +54,9 @@ XBYAK_NO_EXCEPTIONを定義してコンパイルするとgcc/clangで-fno-except
 この値が0でなければ何か問題が発生しています。
 この値は自動的に変更されないので`Xbyak::ClearError()`でリセットしてください。
 `CodeGenerator::reset()`は`ClearError()`を呼びます。
+一度エラーが発生するとコード生成は停止し、エラー状態をクリアするまでバイト列は出力されません。
+`Xbyak::GetError()`が0でない値を返す場合は生成されたコードを使わないでください。
+エラー状態はスレッドローカルであり、同一スレッド上の全てのCodeGeneratorインスタンスで共有されることに注意してください。
 
 MmapAllocator追加
 これはUnix系OSでのみの仕様です。XBYAK_USE_MMAP_ALLOCATORを使うと利用できます。
@@ -404,6 +407,61 @@ sample/{echo,hello}.bfは http://www.kmonos.net/alang/etc/brainfuck.php から
 -----------------------------------------------------------------------------
 ◎履歴
 
+2026/09/17 ver 7.42 k0マスクをエラーにするマクロXBYAK_ALLOW_K0_MASK=1を追加
+2026/08/29 ver 7.41.1 前方参照時のassignL()と[label+disp]のdispの扱いのバグ修正
+2026/08/27 ver 7.41 NF/ZU無しのEGPRに対してエンコードを短くするためにEVEXの代わりにREX2を使う(neg, not, mul, imul, div, idiv, shift/rotate, setcc)
+2026/08/25 ver 7.40.1 lss/lfs/lgs(EGPR)とpush/pop(16-bit EGPR)のバグ修正. popcntのEGPR対応
+2026/08/15 ver 7.40 ACE 1.15対応
+2026/08/14 ver 7.39.1 vmovq/opCvt3/vpextrwのEGPRエンコード修正. tmmultf32psの削除
+2026/08/12 ver 7.39 CodeArrayのreset()時に保護モードを復元. 例外なしモードでnew失敗時にdb()が落ちるバグの修正. CodeGeneratorのレジスタをstatic constexprに変更. StackFrameのUseSSE/UseAVX/NoVzeroupper対応
+2026/08/03 ver 7.38.0 pushp/poppサポート StackFrameのPPX/PUSH2/APX対応
+2026/07/29 ver 7.37.6 メモリ操作に対するT_zチェックの強化とAllocator::allocのサイズ切り上げ対応
+2026/07/14 ver 7.37.5 util::tmm?の型修正とputSegment()の修正
+2026/06/19 ver 7.37.4 TMUL information cpuidの厳密チェック
+2026/05/23 ver 7.37.3 mesond.buildがサブプロジェクトとして使用される場合pkgconfig/cmakeの生成をスキップするように修正
+2026/05/20 ver 7.37.2 tpause/umonitor/umwaitのAPX encoding対応修正
+2026/05/14 ver 7.37.1 正しいメモリオペランドサイズのチェックエラーを修正
+2026/04/27 ver 7.37 Xeon Phi専用命令の削除/AMX_COMPLEX検出対応/CpuTopologyの古いWin SDK対応
+2026/04/17 ver 7.36.2 /sys/devices/cpu_{core,atom}/cpusが存在しないときのfallbackを追加
+2026/04/16 ver 7.36.1 StackFrameの構築方法を修正
+2026/04/14 ver 7.36 util::StackFrameがUse{RSI,RDI,RBP,RBPAsFramePointer}対応
+2026/03/30 ver 7.35.4 vcvthf82ph/vcvt2ph2{b,h}f8[,s]のdisp8Nのエンコーディングミス修正
+2026/03/10 ver 7.35.3 RegExp::operator+()のオーバーロード追加/rewrite()のサイズチェック追加
+2026/03/06 ver 7.35.2 NetBSDのためにPROT_MPROTECTを使う/RegExpの明示的なoperator+を定義
+2026/03/05 ver 7.35.1 clang++ -std=c++14のためにRegExpのconstexprを削除
+2026/03/05 ver 7.35 rip+0をint offsetとして扱うよう修正 doc/usage.mdのOffset in Addressing (RegExp) is in bytesの加筆
+2026/03/03 ver 7.34 prefetchrst2, 10-15byte multi-byte nop対応 Address/RegExp周りの後方互換性向上
+2026/02/13 ver 7.33.3 UWP (Windows) 環境対応
+2026/02/10 ver 7.33.2 cmpxchg16bでxwordを使えるようにする
+2026/02/10 ver 7.33 CpuMaskの文字列フォーマットの変更
+2026/02/09 ver 7.32 Intel 319433-059で参照されたいくつかの命令を削除
+2026/02/06 ver 7.31 ヘテロジニアスな環境のキャッシュ情報を扱うutil::CpuTopology追加
+2025/09/02 ver 7.30 tcvtrowd2ps追加
+2025/08/22 ver 7.29.2 override属性追加
+2025/08/16 ver 7.29.1 ptr[整数] 形式のサポート
+2025/08/15 ver 7.29 アドレッシングでラベルサポート
+2025/07/19 ver 7.28 movrs, vmovrs{b,w,d,q}をサポート
+2025/07/02 ver 7.27 新しいAVX10.2仕様書にしたがってYMMレジスタの埋め込み丸めとsaeの削除
+2025/06/10 ver 7.26 Diamond Rapids用AMX対応
+2025/06/02 ver 7.25 新しいAVX10.2仕様書にしたがってBF16命令をリネーム
+2025/03/12 ver 7.24.2 vcvtneps2bf16はAVX-NE-CONVERTをサポートすべき(revert 749aa31)
+2025/02/26 ver 7.24.1 NDD形式の3-opシフト命令のバグ修正
+2025/02/17 ver 7.24 ahなどとREXプレフィクスの共用やadd eax, byte[rax]のようなサイズ不整合をエラーとする
+2025/02/07 ver 7.23.1 StackFrame::close()の挙動を元に戻す
+2025/02/07 ver 7.23 レジスタサイズのチェック厳密化・16ビット側値の範囲改善・StackFrame::close()の仕様変更。push/pop with APX修正。
+2024/11/11 ver 7.22 Reg::cvt{128,256,512}(). xed 2024.11.04でテスト
+2024/10/31 ver 7.21 SSE命令のXMMレジスタのチェックを厳密化
+2024/10/17 ver 7.20.1 AVX10.2 rev 2.0仕様書の変更に追従
+2024/10/15 ver 7.20 setDefaultEncoding/setDefaultEncodingAVX10の仕様確定
+2024/10/15 ver 7.11 AVX10.2完全サポート
+2024/10/13 ver 7.10 AVX10 integer and fp16 vnni, mediaの新命令対応. setDefaultEncodingの拡張.
+2024/10/10 ver 7.09.1 vpcompressbとvpcompresswの名前修正
+2024/10/08 ver 7.09 AVX10.2のYMMレジスタの埋め込み丸め対応
+2024/10/07 ver 7.08 rdfabaseなどサポート
+2024/08/29 ver 7.07.1 xchgの仕様をnasm 2.16.03の挙動に合わせる。
+2024/06/11 ver 7.07 xresldtrk/xsusldtrkサポート
+2024/03/07 ver 7.06 util::Cpuのキャッシュ判定周りがAMD CPU対応
+2024/02/11 ver 7.05.1 util::CpuのextractBit()とautoGrowモードでのalign()の修正
 2024/01/03 ver 7.05 APX対応RAO-INT
 2023/12/28 ver 7.04 2バイトオペコードのrex2対応
 2023/12/26 ver 7.03 dfvのデフォルト値を0に設定

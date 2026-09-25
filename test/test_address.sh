@@ -3,26 +3,27 @@
 set -e
 
 FILTER="grep -v warning"
+CXX=${CXX:=g++}
+CFLAGS_USER=${CFLAGS}
+CFLAGS_WARN="$(cat CFLAGS_WARN.cfg)"
 
 sub()
 {
+CFLAGS="$CFLAGS_USER $CFLAGS_WARN -I../ $OPT2"
 
-CFLAGS="-Wall -I../ $OPT2"
-CXX=${CXX:=g++}
+echo $CXX $CFLAGS address.cpp -o address.exe
+$CXX $CFLAGS address.cpp -o address.exe
 
-echo "compile address.cpp"
-$CXX $CFLAGS address.cpp -o address
-
-./address $1 > a.asm
+./address.exe $1 > a.asm
 echo "asm"
 $EXE -f$OPT3 a.asm -l a.lst
 awk '{printf "%s", sub(/-$/, "", $3) ? $3 : $3 ORS}' a.lst | $FILTER > ok.lst
 
 echo "xbyak"
-./address $1 jit > nm.cpp
+./address.exe $1 jit > nm.cpp
 echo "compile nm_frame.cpp"
-$CXX $CFLAGS -DXBYAK_TEST nm_frame.cpp -o nm_frame
-./nm_frame > x.lst
+$CXX $CFLAGS -DXBYAK_TEST nm_frame.cpp -o nm_frame.exe
+./nm_frame.exe > x.lst
 diff -bB ok.lst x.lst && echo "ok"
 
 }
