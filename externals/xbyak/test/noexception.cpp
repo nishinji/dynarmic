@@ -56,13 +56,17 @@ void test2()
 void test3()
 {
 	static struct EmptyAllocator : Xbyak::Allocator {
-		uint8_t *alloc(size_t) { return 0; }
+		uint8_t *alloc(size_t) XBYAK_OVERRIDE { return 0; }
 	} emptyAllocator;
 	struct Code : CodeGenerator {
 		Code() : CodeGenerator(8, 0, &emptyAllocator)
 		{
-			mov(eax, 3);
+			assertBool(Xbyak::GetError() != 0);
+			Xbyak::ClearError();
 			assertBool(Xbyak::GetError() == 0);
+			mov(eax, 3);
+			assertBool(Xbyak::GetError() != 0);
+			Xbyak::ClearError();
 			mov(eax, 3);
 			mov(eax, 3);
 			assertBool(Xbyak::GetError() != 0);

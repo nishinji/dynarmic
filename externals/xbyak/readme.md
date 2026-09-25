@@ -1,7 +1,8 @@
+<img src="https://raw.githubusercontent.com/xbyak/.github/refs/heads/main/logo/icon.svg" width="64px" align="right" alt="">
 
-# Xbyak 7.05 [![Badge Build]][Build Status]
+# Xbyak 7.42 [![Badge Build]][Build Status]
 
-*A C++ JIT assembler for x86 (IA32), x64 (AMD64, x86-64)*
+*A JIT assembler for x86/x64 architectures supporting the latest instruction set extensions such as AVX10.2 and ACE*
 
 ## Menu
 
@@ -11,17 +12,16 @@
 
 ## Abstract
 
-Xbyak is a C++ header library that enables dynamically to assemble x86(IA32), x64(AMD64, x86-64) mnemonic.
+Xbyak is a C++ header-only library that enables dynamic assembly of x86/x64 instructions using mnemonics.
 
-The pronunciation of Xbyak is `kəi-bja-k`.
-It is named from a Japanese word [開闢](https://translate.google.com/?hl=ja&sl=ja&tl=en&text=%E9%96%8B%E9%97%A2&op=translate), which means the beginning of the world.
+The pronunciation of Xbyak is `/kʌɪbjæk/` (kai-byak).
 
-## Feature
+The name is derived from the Japanese word [開闢](https://translate.google.com/?hl=ja&sl=ja&tl=en&text=%E9%96%8B%E9%97%A2&op=translate) (kaibyaku), which means "the beginning of the world" or "creation".
 
-- header file only
-- Intel/MASM like syntax
-- fully support AVX-512
-- support APX/AVX10
+## Features
+- Header-only library
+- Intel/MASM-like syntax
+- Full support for AVX-512, AVX10.2, APX, AMX, and ACE
 
 **Note**:
 Use `and_()`, `or_()`, ... instead of `and()`, `or()`.
@@ -33,20 +33,23 @@ If you want to use them, then specify `-fno-operator-names` option to gcc/clang.
 
 ### News
 
-- support RAO-INT for APX
-- support AVX10 detection, AESKLE, WIDE_KL, KEYLOCKER, KEYLOCKER_WIDE
-- support APX except for a few instructions
-- add amx_fp16/avx_vnni_int8/avx_ne_convert/avx-ifma
-- add movdiri, movdir64b, clwb, cldemote
+- Support ACE 1.15
+- Support AVX10.2
+- Support xresldtrk/xsusldtrk
+- Support RAO-INT for APX
+- Support AVX10 detection, AESKLE, WIDE_KL, KEYLOCKER, KEYLOCKER_WIDE
+- Support APX except for a few instructions
+- Add amx_fp16/avx_vnni_int8/avx_ne_convert/avx-ifma
+- Add movdiri, movdir64b, clwb, cldemote
 - WAITPKG instructions (tpause, umonitor, umwait) are supported.
 - MmapAllocator supports memfd with user-defined strings. see sample/memfd.cpp
-- strictly check address offset disp32 in a signed 32-bit integer. e.g., `ptr[(void*)0xffffffff]` causes an error.
-  - define `XBYAK_OLD_DISP_CHECK` if you need an old check, but the option will be remoevd.
-- add `jmp(mem, T_FAR)`, `call(mem, T_FAR)` `retf()` for far absolute indirect jump.
-- vnni instructions such as vpdpbusd supports vex encoding.
-- (break backward compatibility) `push(byte, imm)` (resp. `push(word, imm)`) forces to cast `imm` to 8(resp. 16) bit.
+- Strictly check address offset disp32 in a signed 32-bit integer. e.g., `ptr[(void*)0xffffffff]` causes an error.
+  - Define `XBYAK_OLD_DISP_CHECK` if you need an old check, but the option will be remoevd.
+- Add `jmp(mem, T_FAR)`, `call(mem, T_FAR)` `retf()` for far absolute indirect jump.
+- VNNI instructions such as vpdpbusd supports vex encoding.
+- (Break backward compatibility) `push(byte, imm)` (resp. `push(word, imm)`) forces to cast `imm` to 8(resp. 16) bit.
 - (Windows) `#include <winsock2.h>` has been removed from xbyak.h, so add it explicitly if you need it.
-- support exception-less mode see. [Exception-less mode](#exception-less-mode)
+- Support exception-less mode see. [Exception-less mode](#exception-less-mode)
 - `XBYAK_USE_MMAP_ALLOCATOR` will be defined on Linux/macOS unless `XBYAK_DONT_USE_MMAP_ALLOCATOR` is defined.
 
 ### Supported OS
@@ -58,6 +61,15 @@ If you want to use them, then specify `-fno-operator-names` option to gcc/clang.
 ### Supported Compilers
 
 Almost C++03 or later compilers for x86/x64 such as Visual Studio, g++, clang++, Intel C++ compiler and g++ on mingw/cygwin.
+
+
+### References
+- [AI Compute Extensions (ACE) Specification](https://x86ecosystem.org/resource/ai-compute-extensions-ace-specification/)
+- [Intel 64 and IA-32 Architectures Software Developer Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
+- [Intel Advanced Performance Extensions (Intel APX) Architecture Specification](https://www.intel.com/content/www/us/en/content-details/913917/intel-advanced-performance-extensions-intel-apx-architecture-specification.html)
+- [Intel Advanced Vector Extensions 10.2 (Intel AVX10.2) Architecture Specification](https://www.intel.com/content/www/us/en/content-details/919693/intel-advanced-vector-extensions-10-2-intel-avx10-2-architecture-specification.html)
+- [Intel Architecture Instruction Set Extensions Programming Reference](https://www.intel.com/content/www/us/en/content-details/922690/intel-architecture-instruction-set-extensions-programming-reference.html)
+- [Intel Software Development Emulator](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html)
 
 ## License
 
