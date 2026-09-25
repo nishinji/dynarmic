@@ -7,12 +7,9 @@
 // SPDX-License-Identifier: BSL-1.0
 #include <catch2/internal/catch_test_case_registry_impl.hpp>
 
-#include <catch2/internal/catch_context.hpp>
 #include <catch2/internal/catch_enforce.hpp>
 #include <catch2/interfaces/catch_interfaces_config.hpp>
 #include <catch2/interfaces/catch_interfaces_registry_hub.hpp>
-#include <catch2/internal/catch_random_number_generator.hpp>
-#include <catch2/internal/catch_run_context.hpp>
 #include <catch2/internal/catch_sharding.hpp>
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_spec.hpp>
@@ -25,6 +22,9 @@
 namespace Catch {
 
     namespace {
+        // Picked small-ish number at random
+        static size_t kInitialTestCount = 120;
+
         static void enforceNoDuplicateTestCases(
             std::vector<TestCaseHandle> const& tests ) {
             auto testInfoCmp = []( TestCaseInfo const* lhs,
@@ -73,7 +73,6 @@ namespace Catch {
             return sorted;
         }
         case TestRunOrder::Randomized: {
-            seedRng(config);
             using TestWithHash = std::pair<TestCaseInfoHasher::hash_t, TestCaseHandle>;
 
             TestCaseInfoHasher h{ config.rngSeed() };
@@ -127,15 +126,26 @@ namespace Catch {
         return getRegistryHub().getTestCaseRegistry().getAllTestsSorted( config );
     }
 
+
+    TestRegistry::TestRegistry() {
+        // We pre-reserve some reasonable number of tests to avoid the
+        // initial geometric growth churning during test registration.
+        m_handles.reserve( kInitialTestCount );
+        m_test_infos.reserve( kInitialTestCount );
+        m_invokers.reserve( kInitialTestCount );
+    }
+    TestRegistry::~TestRegistry() = default;
+
     void TestRegistry::registerTest(Detail::unique_ptr<TestCaseInfo> testInfo, Detail::unique_ptr<ITestInvoker> testInvoker) {
         m_handles.emplace_back(testInfo.get(), testInvoker.get());
-        m_viewed_test_infos.push_back(testInfo.get());
-        m_owned_test_infos.push_back(CATCH_MOVE(testInfo));
+        m_test_infos.push_back(CATCH_MOVE(testInfo));
         m_invokers.push_back(CATCH_MOVE(testInvoker));
     }
 
-    std::vector<TestCaseInfo*> const& TestRegistry::getAllInfos() const {
-        return m_viewed_test_infos;
+    void TestRegistry::enableFilenameTags() {
+        for (auto& info : m_test_infos) {
+            info->addFilenameTag();
+        }
     }
 
     std::vector<TestCaseHandle> const& TestRegistry::getAllTests() const {

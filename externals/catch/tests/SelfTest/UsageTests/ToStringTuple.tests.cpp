@@ -13,7 +13,7 @@
 
 TEST_CASE( "tuple<>", "[toString][tuple]" )
 {
-    typedef std::tuple<> type;
+    using type = std::tuple<>;
     CHECK( "{ }" == ::Catch::Detail::stringify(type{}) );
     type value {};
     CHECK( "{ }" == ::Catch::Detail::stringify(value) );
@@ -21,33 +21,33 @@ TEST_CASE( "tuple<>", "[toString][tuple]" )
 
 TEST_CASE( "tuple<int>", "[toString][tuple]" )
 {
-    typedef std::tuple<int> type;
+    using type = std::tuple<int>;
     CHECK( "{ 0 }" == ::Catch::Detail::stringify(type{0}) );
 }
 
 
 TEST_CASE( "tuple<float,int>", "[toString][tuple]" )
 {
-    typedef std::tuple<float,int> type;
-    CHECK( "1.2f" == ::Catch::Detail::stringify(float(1.2)) );
-    CHECK( "{ 1.2f, 0 }" == ::Catch::Detail::stringify(type{1.2f,0}) );
+    using type = std::tuple<float,int>;
+    CHECK( "1.5f" == ::Catch::Detail::stringify(float(1.5)) );
+    CHECK( "{ 1.5f, 0 }" == ::Catch::Detail::stringify(type{1.5f,0}) );
 }
 
 TEST_CASE( "tuple<string,string>", "[toString][tuple]" )
 {
-    typedef std::tuple<std::string,std::string> type;
+    using type = std::tuple<std::string,std::string>;
     CHECK( "{ \"hello\", \"world\" }" == ::Catch::Detail::stringify(type{"hello","world"}) );
 }
 
 TEST_CASE( "tuple<tuple<int>,tuple<>,float>", "[toString][tuple]" )
 {
-    typedef std::tuple<std::tuple<int>,std::tuple<>,float> type;
-    type value { std::tuple<int>{42}, {}, 1.2f };
-    CHECK( "{ { 42 }, { }, 1.2f }" == ::Catch::Detail::stringify(value) );
+    using type = std::tuple<std::tuple<int>,std::tuple<>,float>;
+    type value { std::tuple<int>{42}, {}, 1.5f };
+    CHECK( "{ { 42 }, { }, 1.5f }" == ::Catch::Detail::stringify(value) );
 }
 
 TEST_CASE( "tuple<nullptr,int,const char *>", "[approvals][toString][tuple]" ) {
-    typedef std::tuple<std::nullptr_t,int,const char *> type;
+    using type = std::tuple<std::nullptr_t,int,const char *>;
     type value { nullptr, 42, "Catch me" };
     CHECK( "{ nullptr, 42, \"Catch me\" }" == ::Catch::Detail::stringify(value) );
 }

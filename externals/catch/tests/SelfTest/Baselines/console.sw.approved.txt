@@ -768,8 +768,25 @@ Generators.tests.cpp:<line number>
 ...............................................................................
 
 Generators.tests.cpp:<line number>: FAILED:
+  {Unknown expression after the reported line}
 due to unexpected exception with message:
   failure to init
+
+-------------------------------------------------------------------------------
+#3001: Enum-based bitfields can be captured
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( bf.e == 1 )
+with expansion:
+  1 == 1
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( 1 == bf.e )
+with expansion:
+  1 == 1
 
 -------------------------------------------------------------------------------
 #748 - captures with unexpected exceptions
@@ -779,8 +796,8 @@ Exception.tests.cpp:<line number>
 ...............................................................................
 
 Exception.tests.cpp:<line number>: FAILED:
-due to unexpected exception with messages:
-  answer := 42
+  {Unknown expression after the reported line}
+due to unexpected exception with message:
   expected exception
 
 -------------------------------------------------------------------------------
@@ -2029,6 +2046,54 @@ with expansion:
   1 == 1
 
 -------------------------------------------------------------------------------
+A TEST_CASE_PERSISTENT_FIXTURE based test run that fails
+  First partial run
+-------------------------------------------------------------------------------
+Class.tests.cpp:<line number>
+...............................................................................
+
+Class.tests.cpp:<line number>: PASSED:
+  REQUIRE( m_a++ == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+A TEST_CASE_PERSISTENT_FIXTURE based test run that fails
+  Second partial run
+-------------------------------------------------------------------------------
+Class.tests.cpp:<line number>
+...............................................................................
+
+Class.tests.cpp:<line number>: FAILED:
+  REQUIRE( m_a == 0 )
+with expansion:
+  1 == 0
+
+-------------------------------------------------------------------------------
+A TEST_CASE_PERSISTENT_FIXTURE based test run that succeeds
+  First partial run
+-------------------------------------------------------------------------------
+Class.tests.cpp:<line number>
+...............................................................................
+
+Class.tests.cpp:<line number>: PASSED:
+  REQUIRE( m_a++ == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+A TEST_CASE_PERSISTENT_FIXTURE based test run that succeeds
+  Second partial run
+-------------------------------------------------------------------------------
+Class.tests.cpp:<line number>
+...............................................................................
+
+Class.tests.cpp:<line number>: PASSED:
+  REQUIRE( m_a == 1 )
+with expansion:
+  1 == 1
+
+-------------------------------------------------------------------------------
 A Template product test case - Foo<float>
 -------------------------------------------------------------------------------
 Misc.tests.cpp:<line number>
@@ -2125,32 +2190,42 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == 1.23_a )
 with expansion:
-  1.23 == Approx( 1.23 )
+  1.22999999999999998
+  ==
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != 1.22_a )
 with expansion:
-  1.23 != Approx( 1.22 )
+  1.22999999999999998
+  !=
+  Approx( 1.21999999999999997 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( -d == -1.23_a )
 with expansion:
-  -1.23 == Approx( -1.23 )
+  -1.22999999999999998
+  ==
+  Approx( -1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == 1.2_a .epsilon(.1) )
 with expansion:
-  1.23 == Approx( 1.2 )
+  1.22999999999999998
+  ==
+  Approx( 1.19999999999999996 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != 1.2_a .epsilon(.001) )
 with expansion:
-  1.23 != Approx( 1.2 )
+  1.22999999999999998
+  !=
+  Approx( 1.19999999999999996 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == 1_a .epsilon(.3) )
 with expansion:
-  1.23 == Approx( 1.0 )
+  1.22999999999999998 == Approx( 1.0 )
 
 -------------------------------------------------------------------------------
 A couple of nested sections followed by a failure
@@ -2219,12 +2294,12 @@ with expansion:
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 100.3 != Approx(100.0) )
 with expansion:
-  100.3 != Approx( 100.0 )
+  100.29999999999999716 != Approx( 100.0 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 100.3 == Approx(100.0).margin(0.5) )
 with expansion:
-  100.3 == Approx( 100.0 )
+  100.29999999999999716 == Approx( 100.0 )
 
 -------------------------------------------------------------------------------
 An empty test with no assertions
@@ -2342,12 +2417,16 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( divide( 22, 7 ) == Approx( 3.141 ).epsilon( 0.001 ) )
 with expansion:
-  3.1428571429 == Approx( 3.141 )
+  3.14285714285714279
+  ==
+  Approx( 3.14100000000000001 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( divide( 22, 7 ) != Approx( 3.141 ).epsilon( 0.0001 ) )
 with expansion:
-  3.1428571429 != Approx( 3.141 )
+  3.14285714285714279
+  !=
+  Approx( 3.14100000000000001 )
 
 -------------------------------------------------------------------------------
 Approximate comparisons with different epsilons
@@ -2358,12 +2437,16 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != Approx( 1.231 ) )
 with expansion:
-  1.23 != Approx( 1.231 )
+  1.22999999999999998
+  !=
+  Approx( 1.23100000000000009 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == Approx( 1.231 ).epsilon( 0.1 ) )
 with expansion:
-  1.23 == Approx( 1.231 )
+  1.22999999999999998
+  ==
+  Approx( 1.23100000000000009 )
 
 -------------------------------------------------------------------------------
 Approximate comparisons with floats
@@ -2374,7 +2457,9 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 1.23f == Approx( 1.23f ) )
 with expansion:
-  1.23f == Approx( 1.2300000191 )
+  1.230000019f
+  ==
+  Approx( 1.23000001907348633 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 0.0f == Approx( 0.0f ) )
@@ -2421,12 +2506,16 @@ with expansion:
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 1.234f == Approx( dMedium ) )
 with expansion:
-  1.234f == Approx( 1.234 )
+  1.233999968f
+  ==
+  Approx( 1.23399999999999999 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( dMedium == Approx( 1.234f ) )
 with expansion:
-  1.234 == Approx( 1.2339999676 )
+  1.23399999999999999
+  ==
+  Approx( 1.23399996757507324 )
 
 -------------------------------------------------------------------------------
 Arbitrary predicate matcher
@@ -2492,6 +2581,41 @@ Compilation.tests.cpp:<line number>: PASSED:
   REQUIRE_FALSE( lhs ^ lhs )
 with expansion:
   !(Val: 1 ^ Val: 1)
+
+-------------------------------------------------------------------------------
+Assertions can be nested - CHECK
+-------------------------------------------------------------------------------
+AssertionHandler.tests.cpp:<line number>
+...............................................................................
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+  REQUIRE( i > 10 )
+with expansion:
+  2 > 10
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+  CHECK( foo( 2 ) == 2 )
+due to unexpected exception with message:
+  { nested assertion failed }
+
+AssertionHandler.tests.cpp:<line number>: PASSED:
+  CHECK( true )
+
+-------------------------------------------------------------------------------
+Assertions can be nested - REQUIRE
+-------------------------------------------------------------------------------
+AssertionHandler.tests.cpp:<line number>
+...............................................................................
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+  REQUIRE( i > 10 )
+with expansion:
+  2 > 10
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+  REQUIRE( foo( 2 ) == 2 )
+due to unexpected exception with message:
+  { nested assertion failed }
 
 -------------------------------------------------------------------------------
 Assertions then sections
@@ -2794,6 +2918,40 @@ with message:
   3
 
 -------------------------------------------------------------------------------
+Captures do not leave block with an exception
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with message:
+  a := 1
+
+-------------------------------------------------------------------------------
+Captures outlive section end
+  Dummy section
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: PASSED:
+  CHECK( true )
+with message:
+  a := 1
+
+-------------------------------------------------------------------------------
+Captures outlive section end
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with message:
+  a := 1
+
+-------------------------------------------------------------------------------
 CaseInsensitiveEqualsTo is case insensitive
   Degenerate cases
 -------------------------------------------------------------------------------
@@ -2904,24 +3062,24 @@ ToStringGeneral.tests.cpp:<line number>
 ...............................................................................
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( tab == '\t' )
+  CHECK( ::Catch::Detail::stringify('\t') == "'\\t'" )
 with expansion:
-  '\t' == '\t'
+  "'\t'" == "'\t'"
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( newline == '\n' )
+  CHECK( ::Catch::Detail::stringify('\n') == "'\\n'" )
 with expansion:
-  '\n' == '\n'
+  "'\n'" == "'\n'"
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( carr_return == '\r' )
+  CHECK( ::Catch::Detail::stringify('\r') == "'\\r'" )
 with expansion:
-  '\r' == '\r'
+  "'\r'" == "'\r'"
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( form_feed == '\f' )
+  CHECK( ::Catch::Detail::stringify('\f') == "'\\f'" )
 with expansion:
-  '\f' == '\f'
+  "'\f'" == "'\f'"
 
 -------------------------------------------------------------------------------
 Character pretty printing
@@ -2931,29 +3089,19 @@ ToStringGeneral.tests.cpp:<line number>
 ...............................................................................
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( space == ' ' )
+  CHECK( ::Catch::Detail::stringify( ' ' ) == "' '" )
 with expansion:
-  ' ' == ' '
+  "' '" == "' '"
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == chars[i] )
+  CHECK( ::Catch::Detail::stringify( 'A' ) == "'A'" )
 with expansion:
-  'a' == 'a'
+  "'A'" == "'A'"
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == chars[i] )
+  CHECK( ::Catch::Detail::stringify( 'z' ) == "'z'" )
 with expansion:
-  'z' == 'z'
-
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == chars[i] )
-with expansion:
-  'A' == 'A'
-
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == chars[i] )
-with expansion:
-  'Z' == 'Z'
+  "'z'" == "'z'"
 
 -------------------------------------------------------------------------------
 Character pretty printing
@@ -2963,29 +3111,55 @@ ToStringGeneral.tests.cpp:<line number>
 ...............................................................................
 
 ToStringGeneral.tests.cpp:<line number>: PASSED:
-  CHECK( null_terminator == '\0' )
+  CHECK( ::Catch::Detail::stringify( '\0' ) == "0" )
+with expansion:
+  "0" == "0"
+
+ToStringGeneral.tests.cpp:<line number>: PASSED:
+  CHECK( ::Catch::Detail::stringify( static_cast<char>(2) ) == "2" )
+with expansion:
+  "2" == "2"
+
+ToStringGeneral.tests.cpp:<line number>: PASSED:
+  CHECK( ::Catch::Detail::stringify( static_cast<char>(5) ) == "5" )
+with expansion:
+  "5" == "5"
+
+-------------------------------------------------------------------------------
+Clara::Arg does not crash on incomplete input
+-------------------------------------------------------------------------------
+Clara.tests.cpp:<line number>
+...............................................................................
+
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( name.empty() )
+with expansion:
+  true
+
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( result )
+with expansion:
+  {?}
+
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( result.type() == Catch::Clara::Detail::ResultType::Ok )
 with expansion:
   0 == 0
 
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == i )
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( parsed.type() == Catch::Clara::ParseResultType::NoMatch )
+with expansion:
+  1 == 1
+
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( parsed.remainingTokens().count() == 2 )
 with expansion:
   2 == 2
 
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == i )
+Clara.tests.cpp:<line number>: PASSED:
+  CHECK( name.empty() )
 with expansion:
-  3 == 3
-
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == i )
-with expansion:
-  4 == 4
-
-ToStringGeneral.tests.cpp:<line number>: PASSED:
-  REQUIRE( c == i )
-with expansion:
-  5 == 5
+  true
 
 -------------------------------------------------------------------------------
 Clara::Arg supports single-arg parse the way Opt does
@@ -3382,6 +3556,47 @@ with expansion:
   { 1, 2 } == { 1, 2 }
 
 -------------------------------------------------------------------------------
+Comparing (and stringifying) volatile pointers works
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( ptr )
+with expansion:
+  !0
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE( ptr == ptr )
+with expansion:
+  0 == 0
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( ptr != ptr )
+with expansion:
+  !(0 != 0)
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( ptr < ptr )
+with expansion:
+  !(0 < 0)
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE( ptr <= ptr )
+with expansion:
+  0 <= 0
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( ptr > ptr )
+with expansion:
+  !(0 > 0)
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE( ptr >= ptr )
+with expansion:
+  0 >= 0
+
+-------------------------------------------------------------------------------
 Comparing function pointers
 -------------------------------------------------------------------------------
 Tricky.tests.cpp:<line number>
@@ -3697,6 +3912,80 @@ with expansion:
   true
 
 -------------------------------------------------------------------------------
+ConcatGenerator
+  Cat support single-generator construction
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( c.next() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+ConcatGenerator
+  Iterating over multiple generators
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == i + 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == i + 1 )
+with expansion:
+  2 == 2
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == i + 1 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == i + 1 )
+with expansion:
+  4 == 4
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( c.get() == 5 )
+with expansion:
+  5 == 5
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( c.next() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
 Contains string matcher
 -------------------------------------------------------------------------------
 Matchers.tests.cpp:<line number>
@@ -3926,7 +4215,7 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 101.000001 != Approx(100).epsilon(0.01) )
 with expansion:
-  101.000001 != Approx( 100.0 )
+  101.00000099999999748 != Approx( 100.0 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( std::pow(10, -5) != Approx(std::pow(10, -7)) )
@@ -3934,23 +4223,39 @@ with expansion:
   0.00001 != Approx( 0.0000001 )
 
 -------------------------------------------------------------------------------
-Directly creating an EnumInfo
+Delayed unscoped message clearing does not catch newly inserted messages
 -------------------------------------------------------------------------------
-ToString.tests.cpp:<line number>
+Message.tests.cpp:<line number>
 ...............................................................................
 
-ToString.tests.cpp:<line number>: PASSED:
-  CHECK( enumInfo->lookup(0) == "Value1" )
+Message.tests.cpp:<line number>: PASSED:
+  REQUIRE( true )
+with message:
+  a
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with message:
+  b
+
+-------------------------------------------------------------------------------
+Directly creating an EnumInfo
+-------------------------------------------------------------------------------
+EnumToString.tests.cpp:<line number>
+...............................................................................
+
+EnumToString.tests.cpp:<line number>: PASSED:
+  CHECK( enumInfo.lookup(0) == "Value1" )
 with expansion:
   Value1 == "Value1"
 
-ToString.tests.cpp:<line number>: PASSED:
-  CHECK( enumInfo->lookup(1) == "Value2" )
+EnumToString.tests.cpp:<line number>: PASSED:
+  CHECK( enumInfo.lookup(1) == "Value2" )
 with expansion:
   Value2 == "Value2"
 
-ToString.tests.cpp:<line number>: PASSED:
-  CHECK( enumInfo->lookup(3) == "{** unexpected enum value **}" )
+EnumToString.tests.cpp:<line number>: PASSED:
+  CHECK( enumInfo.lookup(3) == "{** unexpected enum value **}" )
 with expansion:
   {** unexpected enum value **}
   ==
@@ -3995,7 +4300,28 @@ with expansion:
   insensitive)
 
 -------------------------------------------------------------------------------
-Enums can quickly have stringification enabled using REGISTER_ENUM
+Enum backed by larger underlying type
+-------------------------------------------------------------------------------
+EnumToString.tests.cpp:<line number>
+...............................................................................
+
+EnumToString.tests.cpp:<line number>: PASSED:
+  REQUIRE( stringify( LargeEnum::Flag1 ) == "Flag1" )
+with expansion:
+  "Flag1" == "Flag1"
+
+EnumToString.tests.cpp:<line number>: PASSED:
+  REQUIRE( stringify( LargeEnum::Flag2 ) == "Flag2" )
+with expansion:
+  "Flag2" == "Flag2"
+
+EnumToString.tests.cpp:<line number>: PASSED:
+  REQUIRE( stringify( LargeEnum::Flag5 ) == "Flag5" )
+with expansion:
+  "Flag5" == "Flag5"
+
+-------------------------------------------------------------------------------
+Enums can quickly have stringification enabled using CATCH_REGISTER_ENUM
 -------------------------------------------------------------------------------
 EnumToString.tests.cpp:<line number>
 ...............................................................................
@@ -4029,7 +4355,7 @@ with expansion:
 
 -------------------------------------------------------------------------------
 Enums in namespaces can quickly have stringification enabled using
-REGISTER_ENUM
+CATCH_REGISTER_ENUM
 -------------------------------------------------------------------------------
 EnumToString.tests.cpp:<line number>
 ...............................................................................
@@ -4053,7 +4379,7 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( 101.01 != Approx(100).epsilon(0.01) )
 with expansion:
-  101.01 != Approx( 100.0 )
+  101.01000000000000512 != Approx( 100.0 )
 
 -------------------------------------------------------------------------------
 Equality checks that should fail
@@ -4079,27 +4405,31 @@ with expansion:
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one == Approx( 9.11f ) )
 with expansion:
-  9.1f == Approx( 9.1099996567 )
+  9.100000381f
+  ==
+  Approx( 9.10999965667724609 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one == Approx( 9.0f ) )
 with expansion:
-  9.1f == Approx( 9.0 )
+  9.100000381f == Approx( 9.0 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one == Approx( 1 ) )
 with expansion:
-  9.1f == Approx( 1.0 )
+  9.100000381f == Approx( 1.0 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one == Approx( 0 ) )
 with expansion:
-  9.1f == Approx( 0.0 )
+  9.100000381f == Approx( 0.0 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.double_pi == Approx( 3.1415 ) )
 with expansion:
-  3.1415926535 == Approx( 3.1415 )
+  3.14159265350000005
+  ==
+  Approx( 3.14150000000000018 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.str_hello == "goodbye" )
@@ -4124,7 +4454,9 @@ with expansion:
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( x == Approx( 1.301 ) )
 with expansion:
-  1.3 == Approx( 1.301 )
+  1.30000000000000027
+  ==
+  Approx( 1.30099999999999993 )
 
 -------------------------------------------------------------------------------
 Equality checks that should succeed
@@ -4140,12 +4472,16 @@ with expansion:
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one == Approx( 9.1f ) )
 with expansion:
-  9.1f == Approx( 9.1000003815 )
+  9.100000381f
+  ==
+  Approx( 9.10000038146972656 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.double_pi == Approx( 3.1415926535 ) )
 with expansion:
-  3.1415926535 == Approx( 3.1415926535 )
+  3.14159265350000005
+  ==
+  Approx( 3.14159265350000005 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.str_hello == "hello" )
@@ -4165,7 +4501,9 @@ with expansion:
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( x == Approx( 1.3 ) )
 with expansion:
-  1.3 == Approx( 1.3 )
+  1.30000000000000027
+  ==
+  Approx( 1.30000000000000004 )
 
 -------------------------------------------------------------------------------
 Equals
@@ -4183,7 +4521,7 @@ Matchers.tests.cpp:<line number>: PASSED:
   CHECK_THAT( testStringForMatching(), Equals( "this string contains 'ABC' as a substring", Catch::CaseSensitive::No ) )
 with expansion:
   "this string contains 'abc' as a substring" equals: "this string contains
-  'abc' as a substring" (case insensitive)
+  'ABC' as a substring" (case insensitive)
 
 -------------------------------------------------------------------------------
 Equals string matcher
@@ -4341,7 +4679,7 @@ Exception.tests.cpp:<line number>
 Exception.tests.cpp:<line number>: PASSED:
   REQUIRE_THROWS_WITH( thisThrows(), Equals( "expecteD Exception", Catch::CaseSensitive::No ) )
 with expansion:
-  "expected exception" equals: "expected exception" (case insensitive)
+  "expected exception" equals: "expecteD Exception" (case insensitive)
 
 -------------------------------------------------------------------------------
 Exception messages can be tested for
@@ -4368,7 +4706,20 @@ with expansion:
 Exception.tests.cpp:<line number>: PASSED:
   REQUIRE_THROWS_WITH( thisThrows(), ContainsSubstring( "exCept", Catch::CaseSensitive::No ) )
 with expansion:
-  "expected exception" contains: "except" (case insensitive)
+  "expected exception" contains: "exCept" (case insensitive)
+
+-------------------------------------------------------------------------------
+Exception thrown inside stringify does not fail the test
+-------------------------------------------------------------------------------
+ToString.tests.cpp:<line number>
+...............................................................................
+
+ToString.tests.cpp:<line number>: PASSED:
+  CHECK( tos == tos )
+with expansion:
+  { stringification failed with an exception: "Invalid" }
+  ==
+  { stringification failed with an exception: "Invalid" }
 
 -------------------------------------------------------------------------------
 Exceptions matchers
@@ -4425,6 +4776,21 @@ Message.tests.cpp:<line number>
 Message.tests.cpp:<line number>: FAILED:
 explicitly with message:
   This is a failure
+
+-------------------------------------------------------------------------------
+FAIL can be nested in assertion
+-------------------------------------------------------------------------------
+AssertionHandler.tests.cpp:<line number>
+...............................................................................
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+explicitly with message:
+  Throw a Catch::TestFailureException
+
+AssertionHandler.tests.cpp:<line number>: FAILED:
+  CHECK_NOTHROW( do_fail() )
+due to unexpected exception with message:
+  { nested assertion failed }
 
 -------------------------------------------------------------------------------
 FAIL does not require an argument
@@ -4488,6 +4854,40 @@ GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE_THROWS_AS( filter( []( int ) { return false; }, value( 3 ) ), Catch::GeneratorException )
 
 -------------------------------------------------------------------------------
+FixedValuesGenerator can be skipped forward
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( values.currentElementIndex() == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( values.currentElementIndex() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( values.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( values.currentElementIndex() == 4 )
+with expansion:
+  4 == 4
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( values.get() == 4 )
+with expansion:
+  4 == 4
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( values.skipToNthElement( 5 ) )
+
+-------------------------------------------------------------------------------
 Floating point matchers: double
   Relative
 -------------------------------------------------------------------------------
@@ -4497,22 +4897,22 @@ Matchers.tests.cpp:<line number>
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 10., WithinRel( 11.1, 0.1 ) )
 with expansion:
-  10.0 and 11.1 are within 10% of each other
+  10.0 and 11.09999999999999964 are within 10% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 10., !WithinRel( 11.2, 0.1 ) )
 with expansion:
-  10.0 not and 11.2 are within 10% of each other
+  10.0 not and 11.19999999999999929 are within 10% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 1., !WithinRel( 0., 0.99 ) )
 with expansion:
-  1.0 not and 0 are within 99% of each other
+  1.0 not and 0.0 are within 99% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( -0., WithinRel( 0. ) )
 with expansion:
-  -0.0 and 0 are within 2.22045e-12% of each other
+  -0.0 and 0.0 are within 2.22045e-12% of each other
 
 -------------------------------------------------------------------------------
 Floating point matchers: double
@@ -4525,7 +4925,7 @@ Matchers.tests.cpp:<line number>
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( v1, WithinRel( v2 ) )
 with expansion:
-  0.0 and 2.22507e-308 are within 2.22045e-12% of each other
+  0.0 and 0.0 are within 2.22045e-12% of each other
 
 -------------------------------------------------------------------------------
 Floating point matchers: double
@@ -4547,12 +4947,12 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0., !WithinAbs( 1., 0.99 ) )
 with expansion:
-  0.0 not is within 0.99 of 1.0
+  0.0 not is within 0.98999999999999999 of 1.0
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0., !WithinAbs( 1., 0.99 ) )
 with expansion:
-  0.0 not is within 0.99 of 1.0
+  0.0 not is within 0.98999999999999999 of 1.0
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 11., !WithinAbs( 10., 0.5 ) )
@@ -4572,7 +4972,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( -10., WithinAbs( -9.6, 0.5 ) )
 with expansion:
-  -10.0 is within 0.5 of -9.6
+  -10.0 is within 0.5 of -9.59999999999999964
 
 -------------------------------------------------------------------------------
 Floating point matchers: double
@@ -4590,8 +4990,8 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( nextafter( 1., 2. ), WithinULP( 1., 1 ) )
 with expansion:
-  1.0 is within 1 ULPs of 1.0000000000000000e+00 ([9.9999999999999989e-01, 1.
-  0000000000000002e+00])
+  1.00000000000000022 is within 1 ULPs of 1.0000000000000000e+00 ([9.
+  9999999999999989e-01, 1.0000000000000002e+00])
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0., WithinULP( nextafter( 0., 1. ), 1 ) )
@@ -4645,7 +5045,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.0001, WithinAbs( 0., 0.001 ) || WithinRel( 0., 0.1 ) )
 with expansion:
-  0.0001 ( is within 0.001 of 0.0 or and 0 are within 10% of each other )
+  0.0001 ( is within 0.001 of 0.0 or and 0.0 are within 10% of each other )
 
 -------------------------------------------------------------------------------
 Floating point matchers: double
@@ -4694,22 +5094,22 @@ Matchers.tests.cpp:<line number>
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 10.f, WithinRel( 11.1f, 0.1f ) )
 with expansion:
-  10.0f and 11.1 are within 10% of each other
+  10.0f and 11.10000038146972656 are within 10% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 10.f, !WithinRel( 11.2f, 0.1f ) )
 with expansion:
-  10.0f not and 11.2 are within 10% of each other
+  10.0f not and 11.19999980926513672 are within 10% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 1.f, !WithinRel( 0.f, 0.99f ) )
 with expansion:
-  1.0f not and 0 are within 99% of each other
+  1.0f not and 0.0 are within 99% of each other
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( -0.f, WithinRel( 0.f ) )
 with expansion:
-  -0.0f and 0 are within 0.00119209% of each other
+  -0.0f and 0.0 are within 0.00119209% of each other
 
 -------------------------------------------------------------------------------
 Floating point matchers: float
@@ -4722,7 +5122,7 @@ Matchers.tests.cpp:<line number>
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( v1, WithinRel( v2 ) )
 with expansion:
-  0.0f and 1.17549e-38 are within 0.00119209% of each other
+  0.0f and 0.0 are within 0.00119209% of each other
 
 -------------------------------------------------------------------------------
 Floating point matchers: float
@@ -4744,12 +5144,12 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.f, !WithinAbs( 1.f, 0.99f ) )
 with expansion:
-  0.0f not is within 0.9900000095 of 1.0
+  0.0f not is within 0.99000000953674316 of 1.0
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.f, !WithinAbs( 1.f, 0.99f ) )
 with expansion:
-  0.0f not is within 0.9900000095 of 1.0
+  0.0f not is within 0.99000000953674316 of 1.0
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.f, WithinAbs( -0.f, 0 ) )
@@ -4774,7 +5174,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( -10.f, WithinAbs( -9.6f, 0.5f ) )
 with expansion:
-  -10.0f is within 0.5 of -9.6000003815
+  -10.0f is within 0.5 of -9.60000038146972656
 
 -------------------------------------------------------------------------------
 Floating point matchers: float
@@ -4797,7 +5197,8 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( nextafter( 1.f, 2.f ), WithinULP( 1.f, 1 ) )
 with expansion:
-  1.0f is within 1 ULPs of 1.00000000e+00f ([9.99999940e-01, 1.00000012e+00])
+  1.000000119f is within 1 ULPs of 1.00000000e+00f ([9.99999940e-01, 1.
+  00000012e+00])
 
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.f, WithinULP( nextafter( 0.f, 1.f ), 1 ) )
@@ -4847,7 +5248,8 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( 0.0001f, WithinAbs( 0.f, 0.001f ) || WithinRel( 0.f, 0.1f ) )
 with expansion:
-  0.0001f ( is within 0.001 of 0.0 or and 0 are within 10% of each other )
+  0.0001f ( is within 0.00100000004749745 of 0.0 or and 0.0 are within 10% of
+  each other )
 
 -------------------------------------------------------------------------------
 Floating point matchers: float
@@ -4932,6 +5334,91 @@ Generators.tests.cpp:<line number>: PASSED:
   REQUIRE( i % 2 == 0 )
 with expansion:
   0 == 0
+
+-------------------------------------------------------------------------------
+Generator adapters properly handle isFinite
+  concat generator
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( finite_cat.isFinite() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( infinite_cat.isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+Generator adapters properly handle isFinite
+  take generator
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take_1.isFinite() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take_2.isFinite() )
+with expansion:
+  true
+
+-------------------------------------------------------------------------------
+Generator adapters properly handle isFinite
+  chunk generator
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( finite_chunk.isFinite() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( infinite_chunk.isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+Generator adapters properly handle isFinite
+  map
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( finite_map.isFinite() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( infinite_map.isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+Generator adapters properly handle isFinite
+  filter
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( finite_filter.isFinite() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( infinite_filter.isFinite() )
+with expansion:
+  !false
 
 -------------------------------------------------------------------------------
 Generators -- adapters
@@ -5575,6 +6062,53 @@ with expansion:
   12 > 3
 
 -------------------------------------------------------------------------------
+Generators can be skipped forward
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.currentElementIndex() == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.currentElementIndex() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.currentElementIndex() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.currentElementIndex() == 5 )
+with expansion:
+  5 == 5
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( generator.get() == 5 )
+with expansion:
+  5 == 5
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( generator.skipToNthElement( 3 ) )
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( generator.skipToNthElement( 6 ) )
+
+-------------------------------------------------------------------------------
 Generators internals
   Single value
 -------------------------------------------------------------------------------
@@ -5796,6 +6330,34 @@ GeneratorsImpl.tests.cpp:<line number>: PASSED:
 
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE_THROWS_AS( filter([](int) { return false; }, values({ 1, 2, 3 })), Catch::GeneratorException )
+
+-------------------------------------------------------------------------------
+Generators internals
+  Filter generator
+  Out-of-line predicates are copied into the generator
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( gen.get() == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( gen.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( gen.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( gen.next() )
+with expansion:
+  !false
 
 -------------------------------------------------------------------------------
 Generators internals
@@ -6288,7 +6850,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.9 == Approx( -0.9 )
+  -0.90000000000000002
+  ==
+  Approx( -0.90000000000000002 )
 with message:
   Current expected value is -0.9
 
@@ -6302,7 +6866,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.8 == Approx( -0.8 )
+  -0.80000000000000004
+  ==
+  Approx( -0.80000000000000004 )
 with message:
   Current expected value is -0.8
 
@@ -6316,7 +6882,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.7 == Approx( -0.7 )
+  -0.70000000000000007
+  ==
+  Approx( -0.70000000000000007 )
 with message:
   Current expected value is -0.7
 
@@ -6330,7 +6898,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.6 == Approx( -0.6 )
+  -0.60000000000000009
+  ==
+  Approx( -0.60000000000000009 )
 with message:
   Current expected value is -0.6
 
@@ -6344,7 +6914,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.5 == Approx( -0.5 )
+  -0.50000000000000011
+  ==
+  Approx( -0.50000000000000011 )
 with message:
   Current expected value is -0.5
 
@@ -6358,7 +6930,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.4 == Approx( -0.4 )
+  -0.40000000000000013
+  ==
+  Approx( -0.40000000000000013 )
 with message:
   Current expected value is -0.4
 
@@ -6372,7 +6946,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.3 == Approx( -0.3 )
+  -0.30000000000000016
+  ==
+  Approx( -0.30000000000000016 )
 with message:
   Current expected value is -0.3
 
@@ -6386,7 +6962,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.2 == Approx( -0.2 )
+  -0.20000000000000015
+  ==
+  Approx( -0.20000000000000015 )
 with message:
   Current expected value is -0.2
 
@@ -6400,7 +6978,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.1 == Approx( -0.1 )
+  -0.10000000000000014
+  ==
+  Approx( -0.10000000000000014 )
 with message:
   Current expected value is -0.1
 
@@ -6414,7 +6994,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.0 == Approx( -0.0 )
+  -0.00000000000000014
+  ==
+  Approx( -0.00000000000000014 )
 with message:
   Current expected value is -1.38778e-16
 
@@ -6428,7 +7010,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.1 == Approx( 0.1 )
+  0.09999999999999987
+  ==
+  Approx( 0.09999999999999987 )
 with message:
   Current expected value is 0.1
 
@@ -6442,7 +7026,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.2 == Approx( 0.2 )
+  0.19999999999999987
+  ==
+  Approx( 0.19999999999999987 )
 with message:
   Current expected value is 0.2
 
@@ -6456,7 +7042,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.3 == Approx( 0.3 )
+  0.29999999999999988
+  ==
+  Approx( 0.29999999999999988 )
 with message:
   Current expected value is 0.3
 
@@ -6470,7 +7058,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.4 == Approx( 0.4 )
+  0.39999999999999991
+  ==
+  Approx( 0.39999999999999991 )
 with message:
   Current expected value is 0.4
 
@@ -6484,7 +7074,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.5 == Approx( 0.5 )
+  0.49999999999999989
+  ==
+  Approx( 0.49999999999999989 )
 with message:
   Current expected value is 0.5
 
@@ -6498,7 +7090,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.6 == Approx( 0.6 )
+  0.59999999999999987
+  ==
+  Approx( 0.59999999999999987 )
 with message:
   Current expected value is 0.6
 
@@ -6512,7 +7106,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.7 == Approx( 0.7 )
+  0.69999999999999984
+  ==
+  Approx( 0.69999999999999984 )
 with message:
   Current expected value is 0.7
 
@@ -6526,7 +7122,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.8 == Approx( 0.8 )
+  0.79999999999999982
+  ==
+  Approx( 0.79999999999999982 )
 with message:
   Current expected value is 0.8
 
@@ -6540,7 +7138,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.9 == Approx( 0.9 )
+  0.8999999999999998
+  ==
+  Approx( 0.8999999999999998 )
 with message:
   Current expected value is 0.9
 
@@ -6554,7 +7154,7 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx( rangeEnd ) )
 with expansion:
-  1.0 == Approx( 1.0 )
+  0.99999999999999978 == Approx( 1.0 )
 
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE_FALSE( gen.next() )
@@ -6588,7 +7188,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.7 == Approx( -0.7 )
+  -0.69999999999999996
+  ==
+  Approx( -0.69999999999999996 )
 with message:
   Current expected value is -0.7
 
@@ -6602,7 +7204,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.4 == Approx( -0.4 )
+  -0.39999999999999997
+  ==
+  Approx( -0.39999999999999997 )
 with message:
   Current expected value is -0.4
 
@@ -6616,7 +7220,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.1 == Approx( -0.1 )
+  -0.09999999999999998
+  ==
+  Approx( -0.09999999999999998 )
 with message:
   Current expected value is -0.1
 
@@ -6630,7 +7236,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.2 == Approx( 0.2 )
+  0.20000000000000001
+  ==
+  Approx( 0.20000000000000001 )
 with message:
   Current expected value is 0.2
 
@@ -6687,7 +7295,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.7 == Approx( -0.7 )
+  -0.69999999999999996
+  ==
+  Approx( -0.69999999999999996 )
 with message:
   Current expected value is -0.7
 
@@ -6701,7 +7311,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.4 == Approx( -0.4 )
+  -0.39999999999999997
+  ==
+  Approx( -0.39999999999999997 )
 with message:
   Current expected value is -0.4
 
@@ -6715,7 +7327,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  -0.1 == Approx( -0.1 )
+  -0.09999999999999998
+  ==
+  Approx( -0.09999999999999998 )
 with message:
   Current expected value is -0.1
 
@@ -6729,7 +7343,9 @@ with message:
 GeneratorsImpl.tests.cpp:<line number>: PASSED:
   REQUIRE( gen.get() == Approx(expected) )
 with expansion:
-  0.2 == Approx( 0.2 )
+  0.20000000000000001
+  ==
+  Approx( 0.20000000000000001 )
 with message:
   Current expected value is 0.2
 
@@ -6928,22 +7544,30 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d >= Approx( 1.22 ) )
 with expansion:
-  1.23 >= Approx( 1.22 )
+  1.22999999999999998
+  >=
+  Approx( 1.21999999999999997 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d >= Approx( 1.23 ) )
 with expansion:
-  1.23 >= Approx( 1.23 )
+  1.22999999999999998
+  >=
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE_FALSE( d >= Approx( 1.24 ) )
 with expansion:
-  !(1.23 >= Approx( 1.24 ))
+  !(1.22999999999999998
+  >=
+  Approx( 1.23999999999999999 ))
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d >= Approx( 1.24 ).epsilon(0.1) )
 with expansion:
-  1.23 >= Approx( 1.24 )
+  1.22999999999999998
+  >=
+  Approx( 1.23999999999999999 )
 
 -------------------------------------------------------------------------------
 Hashers with different seed produce different hash with same test case
@@ -7224,12 +7848,16 @@ with expansion:
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one != Approx( 9.1f ) )
 with expansion:
-  9.1f != Approx( 9.1000003815 )
+  9.100000381f
+  !=
+  Approx( 9.10000038146972656 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.double_pi != Approx( 3.1415926535 ) )
 with expansion:
-  3.1415926535 != Approx( 3.1415926535 )
+  3.14159265350000005
+  !=
+  Approx( 3.14159265350000005 )
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.str_hello != "hello" )
@@ -7260,27 +7888,31 @@ with expansion:
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one != Approx( 9.11f ) )
 with expansion:
-  9.1f != Approx( 9.1099996567 )
+  9.100000381f
+  !=
+  Approx( 9.10999965667724609 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one != Approx( 9.0f ) )
 with expansion:
-  9.1f != Approx( 9.0 )
+  9.100000381f != Approx( 9.0 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one != Approx( 1 ) )
 with expansion:
-  9.1f != Approx( 1.0 )
+  9.100000381f != Approx( 1.0 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one != Approx( 0 ) )
 with expansion:
-  9.1f != Approx( 0.0 )
+  9.100000381f != Approx( 0.0 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.double_pi != Approx( 3.1415 ) )
 with expansion:
-  3.1415926535 != Approx( 3.1415 )
+  3.14159265350000005
+  !=
+  Approx( 3.14150000000000018 )
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.str_hello != "goodbye" )
@@ -7480,7 +8112,7 @@ with expansion:
   ""custom"" == ""custom""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   Quote in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7492,7 +8124,7 @@ with expansion:
   ""\""" == ""\"""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   Backslash in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7504,7 +8136,7 @@ with expansion:
   ""\\"" == ""\\""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   Forward slash in a string is **not** escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7516,7 +8148,7 @@ with expansion:
   ""/"" == ""/""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   Backspace in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7528,7 +8160,7 @@ with expansion:
   ""\b"" == ""\b""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   Formfeed in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7540,7 +8172,7 @@ with expansion:
   ""\f"" == ""\f""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   linefeed in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7552,7 +8184,7 @@ with expansion:
   ""\n"" == ""\n""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   carriage return in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7564,7 +8196,7 @@ with expansion:
   ""\r"" == ""\r""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   tab in a string is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7576,7 +8208,7 @@ with expansion:
   ""\t"" == ""\t""
 
 -------------------------------------------------------------------------------
-JsonWriter escapes charaters in strings properly
+JsonWriter escapes characters in strings properly
   combination of characters is escaped
 -------------------------------------------------------------------------------
 Json.tests.cpp:<line number>
@@ -7586,6 +8218,103 @@ Json.tests.cpp:<line number>: PASSED:
   REQUIRE( sstream.str() == "\"\\\\/\\t\\r\\n\"" )
 with expansion:
   ""\\/\t\r\n"" == ""\\/\t\r\n""
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - double
+  NaN
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "NaN" )
+with expansion:
+  "NaN" == "NaN"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - double
+  Pos nf
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "Infinity" )
+with expansion:
+  "Infinity" == "Infinity"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - double
+  Neg inf
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "-Infinity" )
+with expansion:
+  "-Infinity" == "-Infinity"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - float
+  NaN
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "NaN" )
+with expansion:
+  "NaN" == "NaN"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - float
+  Pos nf
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "Infinity" )
+with expansion:
+  "Infinity" == "Infinity"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes non-finite FP using Python spelling - float
+  Neg inf
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE( sstream.str() == "-Infinity" )
+with expansion:
+  "-Infinity" == "-Infinity"
+
+-------------------------------------------------------------------------------
+JsonWriter serializes numbers independently of the global locale
+-------------------------------------------------------------------------------
+Json.tests.cpp:<line number>
+...............................................................................
+
+Json.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( sstream.str(), ContainsSubstring( "\"double\": 1.5," ) && ContainsSubstring( "\"int\": 1234567," ) && ContainsSubstring( "\"bool-1\": true," ) && ContainsSubstring( "\"bool-2\": false," ) && ContainsSubstring( "\"array\": [\n    2.5,\n    1234567\n  ]\n}" ) )
+with expansion:
+  "{
+    "double": 1.5,
+    "int": 1234567,
+    "bool-1": true,
+    "bool-2": false,
+    "array": [
+      2.5,
+      1234567
+    ]
+  }" ( contains: ""double": 1.5," and contains: ""int": 1234567," and contains:
+  ""bool-1": true," and contains: ""bool-2": false," and contains: ""array": [
+      2.5,
+      1234567
+    ]
+  }" )
 
 -------------------------------------------------------------------------------
 Lambdas in assertions
@@ -7607,22 +8336,30 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d <= Approx( 1.24 ) )
 with expansion:
-  1.23 <= Approx( 1.24 )
+  1.22999999999999998
+  <=
+  Approx( 1.23999999999999999 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d <= Approx( 1.23 ) )
 with expansion:
-  1.23 <= Approx( 1.23 )
+  1.22999999999999998
+  <=
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE_FALSE( d <= Approx( 1.22 ) )
 with expansion:
-  !(1.23 <= Approx( 1.22 ))
+  !(1.22999999999999998
+  <=
+  Approx( 1.21999999999999997 ))
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d <= Approx( 1.22 ).epsilon(0.1) )
 with expansion:
-  1.23 <= Approx( 1.22 )
+  1.22999999999999998
+  <=
+  Approx( 1.21999999999999997 )
 
 -------------------------------------------------------------------------------
 ManuallyRegistered
@@ -7633,6 +8370,134 @@ Misc.tests.cpp:<line number>
 Misc.tests.cpp:<line number>: PASSED:
 with message:
   was called
+
+-------------------------------------------------------------------------------
+MapGenerator can be skipped forward efficiently
+  via calls to next()
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get() == 3 )
+with expansion:
+  3 == 3
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+-------------------------------------------------------------------------------
+MapGenerator can be skipped forward efficiently
+  via calls to skipToNthElement()
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get() == 4 )
+with expansion:
+  4 == 4
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get() == 4 )
+with expansion:
+  4 == 4
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get() == 6 )
+with expansion:
+  6 == 6
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 2 )
+with expansion:
+  2 == 2
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( map_generator.skipToNthElement( 7 ) )
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_calls == 2 )
+with expansion:
+  2 == 2
+
+-------------------------------------------------------------------------------
+MapGenerator can handle not default constructible types
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get().m_i == 1 )
+with expansion:
+  1 == 1
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.next() )
+with expansion:
+  true
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( map_generator.get().m_i == 3 )
+with expansion:
+  3 == 3
 
 -------------------------------------------------------------------------------
 Matchers can be (AllOf) composed with the && operator
@@ -8175,17 +9040,17 @@ with expansion:
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one < 9 )
 with expansion:
-  9.1f < 9
+  9.100000381f < 9
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one > 10 )
 with expansion:
-  9.1f > 10
+  9.100000381f > 10
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.float_nine_point_one > 9.2 )
 with expansion:
-  9.1f > 9.2
+  9.100000381f > 9.19999999999999929
 
 Condition.tests.cpp:<line number>: FAILED:
   CHECK( data.str_hello > "hello" )
@@ -8276,17 +9141,17 @@ with expansion:
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one > 9 )
 with expansion:
-  9.1f > 9
+  9.100000381f > 9
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one < 10 )
 with expansion:
-  9.1f < 10
+  9.100000381f < 10
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.float_nine_point_one < 9.2 )
 with expansion:
-  9.1f < 9.2
+  9.100000381f < 9.19999999999999929
 
 Condition.tests.cpp:<line number>: PASSED:
   REQUIRE( data.str_hello <= "hello" )
@@ -8568,6 +9433,191 @@ with expansion:
   true
 
 -------------------------------------------------------------------------------
+Parsing path filter specs
+  Only section specs leads to old filter behaviour
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( config.useNewPathFilteringBehaviour )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generator specs enable new filter behaviour
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.useNewPathFilteringBehaviour )
+with expansion:
+  true
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generator specs do not accept stringish arguments
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( result )
+with expansion:
+  !{?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generator specs accept star as argument
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[0] == PathFilter( PathFilter::For::Generator, "*" ) )
+with expansion:
+  {?} == {?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generator specs do not accept negative numbers
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( result )
+with expansion:
+  !{?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generic path spec enables new filter behaviour
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.useNewPathFilteringBehaviour )
+with expansion:
+  true
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[0] == PathFilter( PathFilter::For::Generator, "1" ) )
+with expansion:
+  {?} == {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[1] == PathFilter( PathFilter::For::Section, "foobar" ) )
+with expansion:
+  {?} == {?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generic path spec for generator is validated
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( result )
+with expansion:
+  !{?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Generic path spec without colon is rejected
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( result1 )
+with expansion:
+  !{?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( result2 )
+with expansion:
+  !{?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Using both section and generator filters creates filter stack
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[0] == PathFilter( PathFilter::For::Section, "foo-bar" ) )
+with expansion:
+  {?} == {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[1] == PathFilter( PathFilter::For::Generator, "3" ) )
+with expansion:
+  {?} == {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[2] == PathFilter( PathFilter::For::Generator, "123" ) )
+with expansion:
+  {?} == {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[3] == PathFilter( PathFilter::For::Section, "baz" ) )
+with expansion:
+  {?} == {?}
+
+-------------------------------------------------------------------------------
+Parsing path filter specs
+  Section/generator filters are whitespace trimmed
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( result )
+with expansion:
+  {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[0] == PathFilter(PathFilter::For::Section, "untrimmed" ) )
+with expansion:
+  {?} == {?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE( config.pathFilters[1] == PathFilter(PathFilter::For::Generator, "42" ) )
+with expansion:
+  {?} == {?}
+
+-------------------------------------------------------------------------------
 Parsing sharding-related cli flags
   shard-count
 -------------------------------------------------------------------------------
@@ -8762,14 +9812,14 @@ CmdLine.tests.cpp:<line number>
 ...............................................................................
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( cli.parse( { "test", "--warn", "NoAssertions", "--warn", "UnmatchedTestSpec" } ) )
+  REQUIRE( cli.parse( { "test", "--warn", "NoAssertions", "--warn", "UnmatchedTestSpec", "--warn", "InfiniteGenerators" } ) )
 with expansion:
   {?}
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.warnings == ( WarnAbout::NoAssertions | WarnAbout::UnmatchedTestSpec ) )
+  REQUIRE( config.warnings == ( WarnAbout::NoAssertions | WarnAbout::UnmatchedTestSpec | WarnAbout::InfiniteGenerator ) )
 with expansion:
-  3 == 3
+  7 == 7
 
 -------------------------------------------------------------------------------
 Pointers can be compared to null
@@ -8927,7 +9977,7 @@ with expansion:
   1 == 1
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  CHECK( cfg.getReporterSpecs()[0] == Catch::ReporterSpec{ expectedReporter, {}, {}, {} } )
+  CHECK( cfg.getReporterSpecs()[0] == Catch::ReporterSpec{ expectedReporter, {}, {}, {}, {} } )
 with expansion:
   {?} == {?}
 
@@ -8937,7 +9987,7 @@ with expansion:
   1 == 1
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  CHECK( cfg.getProcessedReporterSpecs()[0] == Catch::ProcessedReporterSpec{ expectedReporter, std::string{}, Catch::ColourMode::PlatformDefault, {} } )
+  CHECK( cfg.getProcessedReporterSpecs()[0] == Catch::ProcessedReporterSpec{ expectedReporter, std::string{}, Catch::ColourMode::PlatformDefault, Catch::Verbosity::Normal, {} } )
 with expansion:
   {?} == {?}
 
@@ -9041,7 +10091,7 @@ with message:
   result.errorMessage() := ""
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", {}, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", {}, {}, {}, {} } } )
 with expansion:
   { {?} } == { {?} }
 with message:
@@ -9063,7 +10113,7 @@ with message:
   result.errorMessage() := ""
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", {}, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", {}, {}, {}, {} } } )
 with expansion:
   { {?} } == { {?} }
 with message:
@@ -9085,7 +10135,7 @@ with message:
   result.errorMessage() := ""
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "junit", {}, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "junit", {}, {}, {}, {} } } )
 with expansion:
   { {?} } == { {?} }
 with message:
@@ -9126,7 +10176,7 @@ with message:
   result.errorMessage() := ""
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", "out.txt"s, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", "out.txt"s, {}, {}, {} } } )
 with expansion:
   { {?} } == { {?} }
 with message:
@@ -9148,7 +10198,7 @@ with message:
   result.errorMessage() := ""
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", "C:\\Temp\\out.txt"s, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "console", "C:\\Temp\\out.txt"s, {}, {}, {} } } )
 with expansion:
   { {?} } == { {?} }
 with message:
@@ -9169,7 +10219,7 @@ with expansion:
   {?}
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", "output.xml"s, {}, {} }, { "junit", "output-junit.xml"s, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", "output.xml"s, {}, {}, {} }, { "junit", "output-junit.xml"s, {}, {}, {} } } )
 with expansion:
   { {?}, {?} } == { {?}, {?} }
 
@@ -9188,7 +10238,7 @@ with expansion:
   {?}
 
 CmdLine.tests.cpp:<line number>: PASSED:
-  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", "output.xml"s, {}, {} }, { "console", {}, {}, {} } } )
+  REQUIRE( config.reporterSpecifications == vec_Specs{ { "xml", "output.xml"s, {}, {}, {} }, { "console", {}, {}, {}, {} } } )
 with expansion:
   { {?}, {?} } == { {?}, {?} }
 
@@ -9611,6 +10661,44 @@ with expansion:
 -------------------------------------------------------------------------------
 Process can be configured on command line
   Benchmark options
+  samples must be greater than zero
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  CHECK_FALSE( result )
+with expansion:
+  !{?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( result.errorMessage(), ContainsSubstring("Benchmark samples must be greater than 0") )
+with expansion:
+  "Benchmark samples must be greater than 0" contains: "Benchmark samples must
+  be greater than 0"
+
+-------------------------------------------------------------------------------
+Process can be configured on command line
+  Benchmark options
+  samples must be parseable
+-------------------------------------------------------------------------------
+CmdLine.tests.cpp:<line number>
+...............................................................................
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  CHECK_FALSE( result )
+with expansion:
+  !{?}
+
+CmdLine.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( result.errorMessage(), ContainsSubstring("Could not parse 'abc' as benchmark samples") )
+with expansion:
+  "Could not parse 'abc' as benchmark samples" contains: "Could not parse 'abc'
+  as benchmark samples"
+
+-------------------------------------------------------------------------------
+Process can be configured on command line
+  Benchmark options
   resamples
 -------------------------------------------------------------------------------
 CmdLine.tests.cpp:<line number>
@@ -9642,7 +10730,9 @@ with expansion:
 CmdLine.tests.cpp:<line number>: PASSED:
   REQUIRE( config.benchmarkConfidenceInterval == Catch::Approx(0.99) )
 with expansion:
-  0.99 == Approx( 0.99 )
+  0.98999999999999999
+  ==
+  Approx( 0.98999999999999999 )
 
 -------------------------------------------------------------------------------
 Process can be configured on command line
@@ -9750,6 +10840,39 @@ RandomNumberGeneration.tests.cpp:<line number>: PASSED:
   REQUIRE_THROWS( Catch::generateRandomSeed(static_cast<Catch::GenerateFrom>(77)) )
 
 -------------------------------------------------------------------------------
+RandomGenerator reports itself as infinite - float
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( Catch::Generators::random( TestType{ 0 }, TestType{ 100 } ).isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+RandomGenerator reports itself as infinite - int
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( Catch::Generators::random( TestType{ 0 }, TestType{ 100 } ).isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+RandomGenerator reports itself as infinite - long double
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( Catch::Generators::random( TestType{ 0 }, TestType{ 100 } ).isFinite() )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
 Range type with sentinel
 -------------------------------------------------------------------------------
 ToString.tests.cpp:<line number>
@@ -9817,6 +10940,15 @@ Matchers.tests.cpp:<line number>: PASSED:
   CHECK_THAT( actual, !UnorderedEquals( expected ) )
 with expansion:
   { 'a', 'b' } not UnorderedEquals: { 'c', 'b' }
+
+-------------------------------------------------------------------------------
+RepeatGenerator refuses infinite generators
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( RepeatGenerator<int>( 2, random( 1, 100 ) ) )
 
 -------------------------------------------------------------------------------
 Reporter's write listings to provided stream
@@ -10101,7 +11233,7 @@ Reporters.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( listingString, ContainsSubstring("fakeTag"s) )
 with expansion:
   "{
-    "version": 1,
+    "version": 2,
     "metadata": {
       "name": "",
       "rng-seed": 1234,
@@ -10141,7 +11273,7 @@ Reporters.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( listingString, ContainsSubstring("fake reporter"s) )
 with expansion:
   "{
-    "version": 1,
+    "version": 2,
     "metadata": {
       "name": "",
       "rng-seed": 1234,
@@ -10179,7 +11311,7 @@ Reporters.tests.cpp:<line number>: PASSED:
   REQUIRE_THAT( listingString, ContainsSubstring( "fake test name"s ) && ContainsSubstring( "fakeTestTag"s ) )
 with expansion:
   "{
-    "version": 1,
+    "version": 2,
     "metadata": {
       "name": "",
       "rng-seed": 1234,
@@ -10189,14 +11321,9 @@ with expansion:
       "tests": [
         {
           "name": "fake test name",
-          "class-name": "",
           "tags": [
             "fakeTestTag"
-          ],
-          "source-location": {
-            "filename": "fake-file.cpp",
-            "line": 123456789
-          }
+          ]
         }
       ]" ( contains: "fake test name" and contains: "fakeTestTag" )
 with message:
@@ -10842,6 +11969,56 @@ BDD.tests.cpp:<line number>: PASSED:
 with expansion:
   0 == 0
 
+-------------------------------------------------------------------------------
+Scoped message applies to all assertions in scope
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  CHECK( false )
+with message:
+  This will be reported multiple times
+
+Message.tests.cpp:<line number>: FAILED:
+  CHECK( false )
+with message:
+  This will be reported multiple times
+
+-------------------------------------------------------------------------------
+Scoped messages do not leave block with an exception
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with message:
+  Should be in scope at the end
+
+-------------------------------------------------------------------------------
+Scoped messages outlive section end
+  Dummy section
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: PASSED:
+  CHECK( true )
+with message:
+  Should survive a section end
+
+-------------------------------------------------------------------------------
+Scoped messages outlive section end
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with message:
+  Should survive a section end
+
 A string sent directly to stdout
 A string sent directly to stderr
 A string sent to stderr via clog
@@ -10863,42 +12040,58 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == Approx( 1.23 ) )
 with expansion:
-  1.23 == Approx( 1.23 )
+  1.22999999999999998
+  ==
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != Approx( 1.22 ) )
 with expansion:
-  1.23 != Approx( 1.22 )
+  1.22999999999999998
+  !=
+  Approx( 1.21999999999999997 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != Approx( 1.24 ) )
 with expansion:
-  1.23 != Approx( 1.24 )
+  1.22999999999999998
+  !=
+  Approx( 1.23999999999999999 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == 1.23_a )
 with expansion:
-  1.23 == Approx( 1.23 )
+  1.22999999999999998
+  ==
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != 1.22_a )
 with expansion:
-  1.23 != Approx( 1.22 )
+  1.22999999999999998
+  !=
+  Approx( 1.21999999999999997 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( Approx( d ) == 1.23 )
 with expansion:
-  Approx( 1.23 ) == 1.23
+  Approx( 1.22999999999999998 )
+  ==
+  1.22999999999999998
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( Approx( d ) != 1.22 )
 with expansion:
-  Approx( 1.23 ) != 1.22
+  Approx( 1.22999999999999998 )
+  !=
+  1.21999999999999997
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( Approx( d ) != 1.24 )
 with expansion:
-  Approx( 1.23 ) != 1.24
+  Approx( 1.22999999999999998 )
+  !=
+  1.23999999999999999
 
 Message from section one
 -------------------------------------------------------------------------------
@@ -11002,7 +12195,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   CHECK_THAT( testStringForMatching(), ContainsSubstring( "aBC", Catch::CaseSensitive::No ) )
 with expansion:
-  "this string contains 'abc' as a substring" contains: "abc" (case
+  "this string contains 'abc' as a substring" contains: "aBC" (case
   insensitive)
 
 Matchers.tests.cpp:<line number>: PASSED:
@@ -11013,7 +12206,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   CHECK_THAT( testStringForMatching(), StartsWith( "THIS", Catch::CaseSensitive::No ) )
 with expansion:
-  "this string contains 'abc' as a substring" starts with: "this" (case
+  "this string contains 'abc' as a substring" starts with: "THIS" (case
   insensitive)
 
 Matchers.tests.cpp:<line number>: PASSED:
@@ -11024,7 +12217,7 @@ with expansion:
 Matchers.tests.cpp:<line number>: PASSED:
   CHECK_THAT( testStringForMatching(), EndsWith( " SuBsTrInG", Catch::CaseSensitive::No ) )
 with expansion:
-  "this string contains 'abc' as a substring" ends with: " substring" (case
+  "this string contains 'abc' as a substring" ends with: " SuBsTrInG" (case
   insensitive)
 
 -------------------------------------------------------------------------------
@@ -11632,6 +12825,56 @@ with expansion:
   { {?}, {?} } ( Contains: {?} and Contains: {?} )
 
 -------------------------------------------------------------------------------
+TakeGenerator can be skipped forward
+  take is shorter than underlying
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 2 )
+with expansion:
+  2 == 2
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 5 )
+with expansion:
+  5 == 5
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( take.skipToNthElement( 6 ) )
+
+-------------------------------------------------------------------------------
+TakeGenerator can be skipped forward
+  take is longer than underlying
+-------------------------------------------------------------------------------
+GeneratorsImpl.tests.cpp:<line number>
+...............................................................................
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 0 )
+with expansion:
+  0 == 0
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 2 )
+with expansion:
+  2 == 2
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE( take.get() == 5 )
+with expansion:
+  5 == 5
+
+GeneratorsImpl.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( take.skipToNthElement( 6 ) )
+
+-------------------------------------------------------------------------------
 Template test case method with test types specified inside std::tuple - MyTypes
 - 0
 -------------------------------------------------------------------------------
@@ -11675,9 +12918,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_default_constructible<TestType>::value )
 with expansion:
-  1 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside non-copyable and non-
@@ -11687,9 +12930,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_default_constructible<TestType>::value )
 with expansion:
-  4 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside non-default-constructible
@@ -11699,9 +12942,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_trivially_copyable<TestType>::value )
 with expansion:
-  1 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside non-default-constructible
@@ -11711,9 +12954,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_trivially_copyable<TestType>::value )
 with expansion:
-  4 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside std::tuple - MyTypes - 0
@@ -11722,9 +12965,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_arithmetic<TestType>::value )
 with expansion:
-  4 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside std::tuple - MyTypes - 1
@@ -11733,9 +12976,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_arithmetic<TestType>::value )
 with expansion:
-  1 > 0
+  true
 
 -------------------------------------------------------------------------------
 Template test case with test types specified inside std::tuple - MyTypes - 2
@@ -11744,9 +12987,9 @@ Misc.tests.cpp:<line number>
 ...............................................................................
 
 Misc.tests.cpp:<line number>: PASSED:
-  REQUIRE( sizeof(TestType) > 0 )
+  REQUIRE( std::is_arithmetic<TestType>::value )
 with expansion:
-  4 > 0
+  true
 
 -------------------------------------------------------------------------------
 TemplateTest: vectors can be sized and resized - float
@@ -12327,6 +13570,42 @@ Misc.tests.cpp:<line number>: PASSED:
   REQUIRE( v.capacity() >= 5 )
 with expansion:
   5 >= 5
+
+-------------------------------------------------------------------------------
+TemplateTestSig: compiles with a single int parameter - 1
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+
+No assertions in test case 'TemplateTestSig: compiles with a single int parameter - 1'
+
+-------------------------------------------------------------------------------
+TemplateTestSig: compiles with a single int parameter - 3
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+
+No assertions in test case 'TemplateTestSig: compiles with a single int parameter - 3'
+
+-------------------------------------------------------------------------------
+TemplateTestSig: compiles with a single int parameter - 6
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+
+No assertions in test case 'TemplateTestSig: compiles with a single int parameter - 6'
+
+-------------------------------------------------------------------------------
+TemplateTestSig: compiles with two type parameters - int,int
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+
+No assertions in test case 'TemplateTestSig: compiles with two type parameters - int,int'
 
 -------------------------------------------------------------------------------
 TemplateTestSig: vectors can be sized and resized - (std::tuple<int, float>), 6
@@ -13801,7 +15080,30 @@ Exception.tests.cpp:<line number>
 
 Exception.tests.cpp:<line number>: FAILED:
 due to unexpected exception with message:
-  3.14
+  3.14000000000000012
+
+-------------------------------------------------------------------------------
+Unscoped capture outlives scope
+  A
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+
+No assertions in section 'A'
+
+-------------------------------------------------------------------------------
+Unscoped capture outlives scope
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: FAILED:
+  REQUIRE( false )
+with messages:
+  i := 1
+  j := 2
+  i + j := 3
 
 -------------------------------------------------------------------------------
 Upcasting special member functions
@@ -14785,6 +16087,23 @@ with expansion:
 
 -------------------------------------------------------------------------------
 Usage of RangeEquals range matcher
+  Compare against std::initializer_list
+-------------------------------------------------------------------------------
+MatchersRanges.tests.cpp:<line number>
+...............................................................................
+
+MatchersRanges.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( array_a, RangeEquals( { 1, 2, 3 } ) )
+with expansion:
+  { 1, 2, 3 } elements are { 1, 2, 3 }
+
+MatchersRanges.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( array_a, RangeEquals( { 2, 4, 6 }, []( int l, int r ) { return l * 2 == r; } ) )
+with expansion:
+  { 1, 2, 3 } elements are { 2, 4, 6 }
+
+-------------------------------------------------------------------------------
+Usage of RangeEquals range matcher
   Check short-circuiting behaviour
   Check short-circuits on failure
 -------------------------------------------------------------------------------
@@ -14971,6 +16290,23 @@ with expansion:
   { 1, 2, 3, 4, 5 } unordered elements are { 1, 2, 3, 4, 5 }
 
 -------------------------------------------------------------------------------
+Usage of UnorderedRangeEquals range matcher
+  Compare against std::initializer_list
+-------------------------------------------------------------------------------
+MatchersRanges.tests.cpp:<line number>
+...............................................................................
+
+MatchersRanges.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( array_a, UnorderedRangeEquals( { 10, 20, 1 } ) )
+with expansion:
+  { 1, 10, 20 } unordered elements are { 10, 20, 1 }
+
+MatchersRanges.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( array_a, UnorderedRangeEquals( { 11, 21, 2 }, []( int l, int r ) { return std::abs( l - r ) <= 1; } ) )
+with expansion:
+  { 1, 10, 20 } unordered elements are { 11, 21, 2 }
+
+-------------------------------------------------------------------------------
 Usage of the SizeIs range matcher
   Some with stdlib containers
 -------------------------------------------------------------------------------
@@ -15045,42 +16381,54 @@ Approx.tests.cpp:<line number>
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == approx( 1.23 ) )
 with expansion:
-  1.23 == Approx( 1.23 )
+  1.22999999999999998
+  ==
+  Approx( 1.22999999999999998 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == approx( 1.22 ) )
 with expansion:
-  1.23 == Approx( 1.22 )
+  1.22999999999999998
+  ==
+  Approx( 1.21999999999999997 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d == approx( 1.24 ) )
 with expansion:
-  1.23 == Approx( 1.24 )
+  1.22999999999999998
+  ==
+  Approx( 1.23999999999999999 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( d != approx( 1.25 ) )
 with expansion:
-  1.23 != Approx( 1.25 )
+  1.22999999999999998 != Approx( 1.25 )
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( approx( d ) == 1.23 )
 with expansion:
-  Approx( 1.23 ) == 1.23
+  Approx( 1.22999999999999998 )
+  ==
+  1.22999999999999998
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( approx( d ) == 1.22 )
 with expansion:
-  Approx( 1.23 ) == 1.22
+  Approx( 1.22999999999999998 )
+  ==
+  1.21999999999999997
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( approx( d ) == 1.24 )
 with expansion:
-  Approx( 1.23 ) == 1.24
+  Approx( 1.22999999999999998 )
+  ==
+  1.23999999999999999
 
 Approx.tests.cpp:<line number>: PASSED:
   REQUIRE( approx( d ) != 1.25 )
 with expansion:
-  Approx( 1.23 ) != 1.25
+  Approx( 1.22999999999999998 ) != 1.25
 
 -------------------------------------------------------------------------------
 Variadic macros
@@ -15503,6 +16851,7 @@ Exception.tests.cpp:<line number>
 ...............................................................................
 
 Exception.tests.cpp:<line number>: FAILED:
+  {Unknown expression after the reported line}
 due to unexpected exception with message:
   unexpected exception
 
@@ -15848,6 +17197,102 @@ Tricky.tests.cpp:<line number>: PASSED:
   REQUIRE( obj.prop != 0 )
 with expansion:
   0x<hex digits> != 0
+
+-------------------------------------------------------------------------------
+cat generator
+  Simple usage
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input < 3 )
+with expansion:
+  0 < 3
+
+-------------------------------------------------------------------------------
+cat generator
+  Simple usage
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input < 3 )
+with expansion:
+  1 < 3
+
+-------------------------------------------------------------------------------
+cat generator
+  Simple usage
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input < 3 )
+with expansion:
+  2 < 3
+
+-------------------------------------------------------------------------------
+cat generator
+  Used in map
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input % 2 == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+cat generator
+  Used in map
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input % 2 == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+cat generator
+  Used in map
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input % 2 == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+cat generator
+  Used in map
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input % 2 == 0 )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+cat generator
+  Used in map
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( input % 2 == 0 )
+with expansion:
+  0 == 0
 
 -------------------------------------------------------------------------------
 checkedElse
@@ -16273,17 +17718,23 @@ InternalBenchmark.tests.cpp:<line number>
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( erfc_inv(1.103560) == Approx(-0.09203687623843015) )
 with expansion:
-  -0.0920368762 == Approx( -0.0920368762 )
+  -0.09203687623843014
+  ==
+  Approx( -0.09203687623843015 )
 
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( erfc_inv(1.067400) == Approx(-0.05980291115763361) )
 with expansion:
-  -0.0598029112 == Approx( -0.0598029112 )
+  -0.05980291115763361
+  ==
+  Approx( -0.05980291115763361 )
 
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( erfc_inv(0.050000) == Approx(1.38590382434967796) )
 with expansion:
-  1.3859038243 == Approx( 1.3859038243 )
+  1.38590382434967774
+  ==
+  Approx( 1.38590382434967796 )
 
 -------------------------------------------------------------------------------
 estimate_clock_resolution
@@ -16418,51 +17869,51 @@ Clara.tests.cpp:<line number>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary1)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary1)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary2)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary2)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary3)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary3)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary4)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary4)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary5)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary5)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  Catch::Clara::Detail::is_unary_function<decltype(unary6)>::value
+  Catch::Clara::Detail::is_unary_function_v<decltype(unary6)>
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<decltype(binary1)>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<decltype(binary1)>)
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<decltype(binary2)>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<decltype(binary2)>)
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<decltype(nullary1)>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<decltype(nullary1)>)
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<decltype(nullary2)>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<decltype(nullary2)>)
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<int>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<int>)
 
 Clara.tests.cpp:<line number>: PASSED:
 with message:
-  !(Catch::Clara::Detail::is_unary_function<std::string const&>::value)
+  !(Catch::Clara::Detail::is_unary_function_v<std::string const&>)
 
 -------------------------------------------------------------------------------
 just failure
@@ -16944,37 +18395,6 @@ with expansion:
   {?} == {?}
 
 -------------------------------------------------------------------------------
-normal_cdf
--------------------------------------------------------------------------------
-InternalBenchmark.tests.cpp:<line number>
-...............................................................................
-
-InternalBenchmark.tests.cpp:<line number>: PASSED:
-  CHECK( normal_cdf(0.000000) == Approx(0.50000000000000000) )
-with expansion:
-  0.5 == Approx( 0.5 )
-
-InternalBenchmark.tests.cpp:<line number>: PASSED:
-  CHECK( normal_cdf(1.000000) == Approx(0.84134474606854293) )
-with expansion:
-  0.8413447461 == Approx( 0.8413447461 )
-
-InternalBenchmark.tests.cpp:<line number>: PASSED:
-  CHECK( normal_cdf(-1.000000) == Approx(0.15865525393145705) )
-with expansion:
-  0.1586552539 == Approx( 0.1586552539 )
-
-InternalBenchmark.tests.cpp:<line number>: PASSED:
-  CHECK( normal_cdf(2.809729) == Approx(0.99752083845315409) )
-with expansion:
-  0.9975208385 == Approx( 0.9975208385 )
-
-InternalBenchmark.tests.cpp:<line number>: PASSED:
-  CHECK( normal_cdf(-1.352570) == Approx(0.08809652095066035) )
-with expansion:
-  0.088096521 == Approx( 0.088096521 )
-
--------------------------------------------------------------------------------
 normal_quantile
 -------------------------------------------------------------------------------
 InternalBenchmark.tests.cpp:<line number>
@@ -16983,17 +18403,23 @@ InternalBenchmark.tests.cpp:<line number>
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( normal_quantile(0.551780) == Approx(0.13015979861484198) )
 with expansion:
-  0.1301597986 == Approx( 0.1301597986 )
+  0.13015979861484195
+  ==
+  Approx( 0.13015979861484198 )
 
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( normal_quantile(0.533700) == Approx(0.08457408802851875) )
 with expansion:
-  0.084574088 == Approx( 0.084574088 )
+  0.08457408802851875
+  ==
+  Approx( 0.08457408802851875 )
 
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( normal_quantile(0.025000) == Approx(-1.95996398454005449) )
 with expansion:
-  -1.9599639845 == Approx( -1.9599639845 )
+  -1.95996398454005405
+  ==
+  Approx( -1.95996398454005449 )
 
 -------------------------------------------------------------------------------
 not allowed
@@ -17070,10 +18496,10 @@ with expansion:
 parseEnums
   No enums
 -------------------------------------------------------------------------------
-ToString.tests.cpp:<line number>
+EnumToString.tests.cpp:<line number>
 ...............................................................................
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "" ), Equals( std::vector<Catch::StringRef>{} ) )
 with expansion:
   {  } Equals: {  }
@@ -17082,20 +18508,20 @@ with expansion:
 parseEnums
   One enum value
 -------------------------------------------------------------------------------
-ToString.tests.cpp:<line number>
+EnumToString.tests.cpp:<line number>
 ...............................................................................
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "ClassName::EnumName::Value1" ), Equals(std::vector<Catch::StringRef>{"Value1"} ) )
 with expansion:
   { Value1 } Equals: { Value1 }
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "Value1" ), Equals( std::vector<Catch::StringRef>{"Value1"} ) )
 with expansion:
   { Value1 } Equals: { Value1 }
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "EnumName::Value1" ), Equals(std::vector<Catch::StringRef>{"Value1"} ) )
 with expansion:
   { Value1 } Equals: { Value1 }
@@ -17104,20 +18530,20 @@ with expansion:
 parseEnums
   Multiple enum values
 -------------------------------------------------------------------------------
-ToString.tests.cpp:<line number>
+EnumToString.tests.cpp:<line number>
 ...............................................................................
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "ClassName::EnumName::Value1, ClassName::EnumName::Value2" ), Equals( std::vector<Catch::StringRef>{"Value1", "Value2"} ) )
 with expansion:
   { Value1, Value2 } Equals: { Value1, Value2 }
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "ClassName::EnumName::Value1, ClassName::EnumName::Value2, ClassName::EnumName::Value3" ), Equals( std::vector<Catch::StringRef>{"Value1", "Value2", "Value3"} ) )
 with expansion:
   { Value1, Value2, Value3 } Equals: { Value1, Value2, Value3 }
 
-ToString.tests.cpp:<line number>: PASSED:
+EnumToString.tests.cpp:<line number>: PASSED:
   CHECK_THAT( parseEnums( "ClassName::EnumName::Value1,ClassName::EnumName::Value2 , ClassName::EnumName::Value3" ), Equals( std::vector<Catch::StringRef>{"Value1", "Value2", "Value3"} ) )
 with expansion:
   { Value1, Value2, Value3 } Equals: { Value1, Value2, Value3 }
@@ -17308,6 +18734,42 @@ StringManip.tests.cpp:<line number>: PASSED:
   CHECK( letters == letters )
 with expansion:
   "abcdefcg" == "abcdefcg"
+
+-------------------------------------------------------------------------------
+replaceInPlace
+  no replace in already-replaced string
+  lengthening
+-------------------------------------------------------------------------------
+StringManip.tests.cpp:<line number>
+...............................................................................
+
+StringManip.tests.cpp:<line number>: PASSED:
+  CHECK( Catch::replaceInPlace(letters, "c", "cc") )
+with expansion:
+  true
+
+StringManip.tests.cpp:<line number>: PASSED:
+  CHECK( letters == "abccdefccg" )
+with expansion:
+  "abccdefccg" == "abccdefccg"
+
+-------------------------------------------------------------------------------
+replaceInPlace
+  no replace in already-replaced string
+  shortening
+-------------------------------------------------------------------------------
+StringManip.tests.cpp:<line number>
+...............................................................................
+
+StringManip.tests.cpp:<line number>: PASSED:
+  CHECK( Catch::replaceInPlace(s, "--", "-") )
+with expansion:
+  true
+
+StringManip.tests.cpp:<line number>: PASSED:
+  CHECK( s == "--" )
+with expansion:
+  "--" == "--"
 
 -------------------------------------------------------------------------------
 replaceInPlace
@@ -17961,6 +19423,19 @@ with expansion:
   4 == 4
 
 -------------------------------------------------------------------------------
+system_clock timepoint with non-default duration
+-------------------------------------------------------------------------------
+ToStringChrono.tests.cpp:<line number>
+...............................................................................
+
+ToStringChrono.tests.cpp:<line number>: PASSED:
+  CHECK( tp1 == tp2 )
+with expansion:
+  {iso8601-timestamp}
+  ==
+  {iso8601-timestamp}
+
+-------------------------------------------------------------------------------
 tables
 -------------------------------------------------------------------------------
 Generators.tests.cpp:<line number>
@@ -18176,14 +19651,14 @@ ToStringTuple.tests.cpp:<line number>
 ...............................................................................
 
 ToStringTuple.tests.cpp:<line number>: PASSED:
-  CHECK( "1.2f" == ::Catch::Detail::stringify(float(1.2)) )
+  CHECK( "1.5f" == ::Catch::Detail::stringify(float(1.5)) )
 with expansion:
-  "1.2f" == "1.2f"
+  "1.5f" == "1.5f"
 
 ToStringTuple.tests.cpp:<line number>: PASSED:
-  CHECK( "{ 1.2f, 0 }" == ::Catch::Detail::stringify(type{1.2f,0}) )
+  CHECK( "{ 1.5f, 0 }" == ::Catch::Detail::stringify(type{1.5f,0}) )
 with expansion:
-  "{ 1.2f, 0 }" == "{ 1.2f, 0 }"
+  "{ 1.5f, 0 }" == "{ 1.5f, 0 }"
 
 -------------------------------------------------------------------------------
 tuple<int>
@@ -18216,11 +19691,11 @@ ToStringTuple.tests.cpp:<line number>
 ...............................................................................
 
 ToStringTuple.tests.cpp:<line number>: PASSED:
-  CHECK( "{ { 42 }, { }, 1.2f }" == ::Catch::Detail::stringify(value) )
+  CHECK( "{ { 42 }, { }, 1.5f }" == ::Catch::Detail::stringify(value) )
 with expansion:
-  "{ { 42 }, { }, 1.2f }"
+  "{ { 42 }, { }, 1.5f }"
   ==
-  "{ { 42 }, { }, 1.2f }"
+  "{ { 42 }, { }, 1.5f }"
 
 -------------------------------------------------------------------------------
 uniform samples
@@ -18246,7 +19721,7 @@ with expansion:
 InternalBenchmark.tests.cpp:<line number>: PASSED:
   CHECK( e.confidence_interval == 0.95 )
 with expansion:
-  0.95 == 0.95
+  0.94999999999999996 == 0.94999999999999996
 
 -------------------------------------------------------------------------------
 uniform_integer_distribution can return the bounds
@@ -18751,6 +20226,6 @@ Misc.tests.cpp:<line number>
 Misc.tests.cpp:<line number>: PASSED:
 
 ===============================================================================
-test cases:  417 |  312 passed |  85 failed | 6 skipped | 14 failed as expected
-assertions: 2260 | 2079 passed | 146 failed | 35 failed as expected
+test cases:  454 |  334 passed |  96 failed | 6 skipped | 18 failed as expected
+assertions: 2423 | 2222 passed | 158 failed | 43 failed as expected
 

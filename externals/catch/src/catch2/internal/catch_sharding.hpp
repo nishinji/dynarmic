@@ -8,9 +8,7 @@
 #ifndef CATCH_SHARDING_HPP_INCLUDED
 #define CATCH_SHARDING_HPP_INCLUDED
 
-#include <catch2/catch_session.hpp>
-
-#include <cmath>
+#include <cassert>
 #include <algorithm>
 
 namespace Catch {

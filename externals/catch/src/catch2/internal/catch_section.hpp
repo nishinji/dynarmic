@@ -62,14 +62,16 @@ namespace Catch {
 #else
 
 // These section definitions imply that at most one section at one level
-// will be intered (because only one section's __LINE__ can be equal to
+// will be entered (because only one section's __LINE__ can be equal to
 // the dummy `catchInternalSectionHint` variable from `TEST_CASE`).
 
 namespace Catch {
     namespace Detail {
         // Intentionally without linkage, as it should only be used as a dummy
         // symbol for static analysis.
-        int GetNewSectionHint();
+        // The arguments are used as a dummy for checking warnings in the passed
+        // expressions.
+        int GetNewSectionHint( StringRef, const char* const = nullptr );
     } // namespace Detail
 } // namespace Catch
 
@@ -80,7 +82,8 @@ namespace Catch {
         CATCH_INTERNAL_SUPPRESS_SHADOW_WARNINGS                             \
         if ( [[maybe_unused]] const int catchInternalPreviousSectionHint =  \
                  catchInternalSectionHint,                                  \
-             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(); \
+             catchInternalSectionHint =                                     \
+                 Catch::Detail::GetNewSectionHint(__VA_ARGS__);             \
              catchInternalPreviousSectionHint == __LINE__ )                 \
         CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 
@@ -90,7 +93,8 @@ namespace Catch {
         CATCH_INTERNAL_SUPPRESS_SHADOW_WARNINGS                             \
         if ( [[maybe_unused]] const int catchInternalPreviousSectionHint =  \
                  catchInternalSectionHint,                                  \
-             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(); \
+             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(   \
+                ( Catch::ReusableStringStream() << __VA_ARGS__ ).str());    \
              catchInternalPreviousSectionHint == __LINE__ )                 \
         CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 

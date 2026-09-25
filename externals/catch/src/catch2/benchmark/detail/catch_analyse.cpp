@@ -36,11 +36,11 @@ namespace Catch {
                         samples.data(), samples.data() + samples.size() );
 
                     auto wrap_estimate = [](Estimate<double> e) {
-                        return Estimate<FDuration> {
-                            FDuration(e.point),
-                                FDuration(e.lower_bound),
-                                FDuration(e.upper_bound),
-                                e.confidence_interval,
+                        return Estimate<FDuration>{
+                            FDuration( e.point ),
+                            FDuration( e.lower_bound ),
+                            FDuration( e.upper_bound ),
+                            e.confidence_interval,
                         };
                     };
                     std::vector<FDuration> samples2;
@@ -63,8 +63,8 @@ namespace Catch {
                     FDuration mean = FDuration(0);
                     int i = 0;
                     for (auto it = first; it < last; ++it, ++i) {
-                        samples.push_back(FDuration(*it));
-                        mean += FDuration(*it);
+                        samples.push_back(*it);
+                        mean += *it;
                     }
                     mean /= i;
 

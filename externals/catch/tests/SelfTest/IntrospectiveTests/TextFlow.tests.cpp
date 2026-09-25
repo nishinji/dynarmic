@@ -12,6 +12,7 @@
 #include <sstream>
 
 using Catch::TextFlow::Column;
+using Catch::TextFlow::AnsiSkippingString;
 
 namespace {
     static std::string as_written(Column const& c) {
@@ -152,7 +153,7 @@ TEST_CASE( "TextFlow::Column respects indentation for empty lines",
 
     std::string written = as_written(col);
 
-    REQUIRE(as_written(col) == "  \n  \n  third line");
+    REQUIRE(written == "  \n  \n  third line");
 }
 
 TEST_CASE( "TextFlow::Column leading/trailing whitespace",
@@ -197,4 +198,297 @@ TEST_CASE( "#1400 - TextFlow::Column wrapping would sometimes duplicate words",
             "  massa, luctus ut ligula vitae, suscipit tempus velit. Vivamus sodales, quam\n"
             "  in \n"
             "  convallis posuere, libero nisi ultricies orci, nec lobortis.");
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString skips ansi sequences",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+
+    SECTION("basic string") {
+        std::string text = "a\033[38;2;98;174;239mb\033[38mc\033[0md\033[me";
+        AnsiSkippingString str(text);
+
+        SECTION( "iterates forward" ) {
+            auto it = str.begin();
+            CHECK(*it == 'a');
+            ++it;
+            CHECK(*it == 'b');
+            ++it;
+            CHECK(*it == 'c');
+            ++it;
+            CHECK(*it == 'd');
+            ++it;
+            CHECK(*it == 'e');
+            ++it;
+            CHECK(it == str.end());
+        }
+        SECTION( "iterates backwards" ) {
+            auto it = str.end();
+            --it;
+            CHECK(*it == 'e');
+            --it;
+            CHECK(*it == 'd');
+            --it;
+            CHECK(*it == 'c');
+            --it;
+            CHECK(*it == 'b');
+            --it;
+            CHECK(*it == 'a');
+            CHECK(it == str.begin());
+        }
+    }
+
+    SECTION( "ansi escape sequences at the start" ) {
+        std::string text = "\033[38;2;98;174;239ma\033[38;2;98;174;239mb\033[38mc\033[0md\033[me";
+        AnsiSkippingString str(text);
+        auto it = str.begin();
+        CHECK(*it == 'a');
+        ++it;
+        CHECK(*it == 'b');
+        ++it;
+        CHECK(*it == 'c');
+        ++it;
+        CHECK(*it == 'd');
+        ++it;
+        CHECK(*it == 'e');
+        ++it;
+        CHECK(it == str.end());
+        --it;
+        CHECK(*it == 'e');
+        --it;
+        CHECK(*it == 'd');
+        --it;
+        CHECK(*it == 'c');
+        --it;
+        CHECK(*it == 'b');
+        --it;
+        CHECK(*it == 'a');
+        CHECK(it == str.begin());
+    }
+
+    SECTION( "ansi escape sequences at the end" ) {
+        std::string text = "a\033[38;2;98;174;239mb\033[38mc\033[0md\033[me\033[38;2;98;174;239m";
+        AnsiSkippingString str(text);
+        auto it = str.begin();
+        CHECK(*it == 'a');
+        ++it;
+        CHECK(*it == 'b');
+        ++it;
+        CHECK(*it == 'c');
+        ++it;
+        CHECK(*it == 'd');
+        ++it;
+        CHECK(*it == 'e');
+        ++it;
+        CHECK(it == str.end());
+        --it;
+        CHECK(*it == 'e');
+        --it;
+        CHECK(*it == 'd');
+        --it;
+        CHECK(*it == 'c');
+        --it;
+        CHECK(*it == 'b');
+        --it;
+        CHECK(*it == 'a');
+        CHECK(it == str.begin());
+    }
+
+    SECTION( "skips consecutive escapes" ) {
+        std::string text = "\033[38;2;98;174;239m\033[38;2;98;174;239ma\033[38;2;98;174;239mb\033[38m\033[38m\033[38mc\033[0md\033[me";
+        AnsiSkippingString str(text);
+        auto it = str.begin();
+        CHECK(*it == 'a');
+        ++it;
+        CHECK(*it == 'b');
+        ++it;
+        CHECK(*it == 'c');
+        ++it;
+        CHECK(*it == 'd');
+        ++it;
+        CHECK(*it == 'e');
+        ++it;
+        CHECK(it == str.end());
+        --it;
+        CHECK(*it == 'e');
+        --it;
+        CHECK(*it == 'd');
+        --it;
+        CHECK(*it == 'c');
+        --it;
+        CHECK(*it == 'b');
+        --it;
+        CHECK(*it == 'a');
+        CHECK(it == str.begin());
+    }
+
+    SECTION( "handles incomplete ansi sequences" ) {
+        std::string text = "a\033[b\033[30c\033[30;d\033[30;2e";
+        AnsiSkippingString str(text);
+        CHECK(std::string(str.begin(), str.end()) == text);
+    }
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString computes the size properly",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+    std::string text = "\033[38;2;98;174;239m\033[38;2;98;174;239ma\033[38;2;98;174;239mb\033[38m\033[38m\033[38mc\033[0md\033[me";
+    AnsiSkippingString str(text);
+    CHECK(str.size() == 5);
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString substrings properly",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+    SECTION("basic test") {
+        std::string text = "a\033[38;2;98;174;239mb\033[38mc\033[0md\033[me";
+        AnsiSkippingString str(text);
+        auto a = str.begin();
+        auto b = str.begin();
+        ++b;
+        ++b;
+        CHECK(str.substring(a, b) == "a\033[38;2;98;174;239mb\033[38m");
+        ++a;
+        ++b;
+        CHECK(str.substring(a, b) == "b\033[38mc\033[0m");
+        CHECK(str.substring(a, str.end()) == "b\033[38mc\033[0md\033[me");
+        CHECK(str.substring(str.begin(), str.end()) == text);
+    }
+    SECTION("escapes at the start") {
+        std::string text = "\033[38;2;98;174;239m\033[38;2;98;174;239ma\033[38;2;98;174;239mb\033[38m\033[38m\033[38mc\033[0md\033[me";
+        AnsiSkippingString str(text);
+        auto a = str.begin();
+        auto b = str.begin();
+        ++b;
+        ++b;
+        CHECK(str.substring(a, b) == "\033[38;2;98;174;239m\033[38;2;98;174;239ma\033[38;2;98;174;239mb\033[38m\033[38m\033[38m");
+        ++a;
+        ++b;
+        CHECK(str.substring(a, b) == "b\033[38m\033[38m\033[38mc\033[0m");
+        CHECK(str.substring(a, str.end()) == "b\033[38m\033[38m\033[38mc\033[0md\033[me");
+        CHECK(str.substring(str.begin(), str.end()) == text);
+    }
+    SECTION("escapes at the end") {
+        std::string text = "a\033[38;2;98;174;239mb\033[38mc\033[0md\033[me\033[38m";
+        AnsiSkippingString str(text);
+        auto a = str.begin();
+        auto b = str.begin();
+        ++b;
+        ++b;
+        CHECK(str.substring(a, b) == "a\033[38;2;98;174;239mb\033[38m");
+        ++a;
+        ++b;
+        CHECK(str.substring(a, b) == "b\033[38mc\033[0m");
+        CHECK(str.substring(a, str.end()) == "b\033[38mc\033[0md\033[me\033[38m");
+        CHECK(str.substring(str.begin(), str.end()) == text);
+    }
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString counts UTF-8 codepoints",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+    SECTION( "2-byte codepoints" ) {
+        AnsiSkippingString str( "\xC3\xA4\xC3\xB6\xC3\xBC" ); // äöü
+        CHECK( str.size() == 3 );
+    }
+    SECTION( "3-byte codepoints" ) {
+        AnsiSkippingString str( "\xE4\xB8\xAD\xE6\x96\x87" ); // 中文
+        CHECK( str.size() == 2 );
+    }
+    SECTION( "4-byte codepoints" ) {
+        // U+1F600 U+1F60E
+        AnsiSkippingString str( "\xF0\x9F\x98\x80\xF0\x9F\x98\x8E" );
+        CHECK( str.size() == 2 );
+    }
+    SECTION( "mixed ASCII and UTF-8" ) {
+        AnsiSkippingString str( "a\xC3\xA4" "b" ); // aäb
+        CHECK( str.size() == 3 );
+    }
+    SECTION( "UTF-8 with ANSI escapes" ) {
+        AnsiSkippingString str( "\033[31m\xC3\xA4\xC3\xB6\xC3\xBC\033[0m" );
+        CHECK( str.size() == 3 );
+    }
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString iterates UTF-8 codepoints",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+    // "aäb" = 'a' (0x61), 'ä' (0xC3 0xA4), 'b' (0x62)
+    std::string text = "a\xC3\xA4" "b";
+    AnsiSkippingString str( text );
+
+    SECTION( "forward iteration has correct count" ) {
+        int count = 0;
+        for ( auto it = str.begin(); it != str.end(); ++it ) {
+            ++count;
+        }
+        CHECK( count == 3 );
+    }
+    SECTION( "backward iteration has correct count" ) {
+        auto it = str.end();
+        int count = 0;
+        while ( it != str.begin() ) {
+            --it;
+            ++count;
+        }
+        CHECK( count == 3 );
+    }
+    SECTION( "substring preserves full UTF-8 bytes" ) {
+        auto a = str.begin();
+        auto b = str.begin();
+        ++b; // past 'a'
+        ++b; // past 'ä'
+        CHECK( str.substring( a, b ) == "a\xC3\xA4" );
+    }
+}
+
+TEST_CASE( "TextFlow::AnsiSkippingString handles invalid UTF-8",
+           "[TextFlow][ansiskippingstring][approvals]" ) {
+    SECTION( "Continuation byte at the start" ) {
+        // 0x80 is a continuation byte
+        AnsiSkippingString str( "\x80" );
+        auto it = str.end();
+        --it;
+        CHECK( it == str.begin() );
+        CHECK( *it == static_cast<char>( 0x80 ) );
+    }
+    SECTION( "Multiple continuation bytes at the start" ) {
+        AnsiSkippingString str( "\x80\x80\x80" );
+        auto it = str.end();
+        --it;
+        CHECK( it == str.begin() );
+        CHECK( *it == static_cast<char>( 0x80 ) );
+    }
+}
+
+TEST_CASE( "TextFlow::Column wraps UTF-8 text correctly",
+           "[TextFlow][column][approvals]" ) {
+    // "äöü äöü äöü" = 11 codepoints, 17 bytes
+    Column col( "\xC3\xA4\xC3\xB6\xC3\xBC \xC3\xA4\xC3\xB6\xC3\xBC \xC3\xA4\xC3\xB6\xC3\xBC" );
+
+    SECTION( "width=8" ) {
+        col.width( 8 );
+        // 7 visible codepoints "äöü äöü" fit, then wrap
+        REQUIRE( as_written( col ) ==
+                 "\xC3\xA4\xC3\xB6\xC3\xBC \xC3\xA4\xC3\xB6\xC3\xBC\n"
+                 "\xC3\xA4\xC3\xB6\xC3\xBC" );
+    }
+    SECTION( "width=80" ) {
+        col.width( 80 );
+        REQUIRE( as_written( col ) ==
+                 "\xC3\xA4\xC3\xB6\xC3\xBC \xC3\xA4\xC3\xB6\xC3\xBC \xC3\xA4\xC3\xB6\xC3\xBC" );
+    }
+}
+
+TEST_CASE( "TextFlow::Column skips ansi escape sequences",
+           "[TextFlow][column][approvals]" ) {
+    std::string text = "\033[38;2;98;174;239m\033[38;2;198;120;221mThe quick brown \033[38;2;198;120;221mfox jumped over the lazy dog\033[0m";
+    Column col(text);
+
+    SECTION( "width=20" ) {
+        col.width( 20 );
+        REQUIRE( as_written( col ) == "\033[38;2;98;174;239m\033[38;2;198;120;221mThe quick brown \033[38;2;198;120;221mfox\n"
+                                      "jumped over the lazy\n"
+                                      "dog\033[0m" );
+    }
+
+    SECTION( "width=80" ) {
+        col.width( 80 );
+        REQUIRE( as_written( col ) == text );
+    }
 }
